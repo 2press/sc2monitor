@@ -15,8 +15,8 @@ sc2monitor.setup(apikey='your-bnet-api-key',
 ```
 You have to create your API-key `your-bnet-api-key` and secret `your-bnet-api-secret` by registering this application at https://dev.battle.net/member/register
 
-##Running
-To collect data run the following script regularly (every 5-15 minutes):
+## Execution
+To collect data run the following script regularly (every 5-15 minutes), e.g. via cronjob:
 ```python
 import sc2monitor
 
