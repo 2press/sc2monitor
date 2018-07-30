@@ -10,7 +10,7 @@ from itertools import product
 from operator import itemgetter
 from queue import Empty, Queue
 
-import MySQLdb  # pip install mysqlclient
+import pymysql.cursors
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -48,26 +48,153 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
+
+table_structure = dict()
+
+table_structure['config'] = """CREATE TABLE IF NOT EXISTS `{}` (
+`ID` int(10) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+`name` varchar(32) NOT NULL UNIQUE KEY,
+`value` varchar(32) NOT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8
+COLLATE=utf8_general_ci;
+"""
+
+table_structure['player'] = """CREATE TABLE IF NOT EXISTS `{}` (
+`ID` int(10) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `sc2_player_id` int(10) unsigned NOT NULL,
+  `realm` tinyint(1) NOT NULL DEFAULT '1',
+  `sc2_name` varchar(64) NOT NULL DEFAULT '',
+  `battle_tag` varchar(64) NOT NULL DEFAULT '',
+  `mmr` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `ladder_id` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `league` tinyint(1) NOT NULL DEFAULT '0',
+  `league_tier` tinyint(1) unsigned NOT NULL DEFAULT '3',
+  `race` varchar(64) NOT NULL DEFAULT '',
+  `wins` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `losses` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `ties` mediumint(8) unsigned NOT NULL DEFAULT '0',
+  `last_played` datetime DEFAULT NULL,
+  `last_active_season` tinyint(3) NOT NULL DEFAULT '0',
+  `refreshed` datetime DEFAULT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8
+COLLATE=utf8_general_ci;"""
+
+table_structure['matchhistory'] = """CREATE TABLE IF NOT EXISTS `{}` (
+`ID` int(10) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `playerID` int(10) unsigned NOT NULL,
+  `result` tinyint(1) NOT NULL DEFAULT '0',
+  `played` datetime DEFAULT NULL,
+  `mmr` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `mmr_change` smallint(4) NOT NULL DEFAULT '0',
+  `guess` tinyint(1) NOT NULL DEFAULT '1',
+  `max_length` smallint(5) unsigned NOT NULL DEFAULT '0'
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8
+COLLATE=utf8_general_ci;"""
+
+table_structure['metadata'] = """CREATE TABLE IF NOT EXISTS `{}` (
+`ID` int(10) unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `playerID` int(10) unsigned NOT NULL,
+  `games_available` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `wins` tinyint(3) NOT NULL DEFAULT '0',
+  `losses` tinyint(3) NOT NULL DEFAULT '0',
+  `ties` tinyint(3) NOT NULL DEFAULT '0',
+  `critical_game_played` datetime DEFAULT NULL,
+  `winrate` float NOT NULL DEFAULT '0',
+  `current_mmr` smallint(5) NOT NULL DEFAULT '0',
+  `avg_mmr` smallint(5) NOT NULL DEFAULT '0',
+  `wma_mmr` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `sd_mmr` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `max_mmr` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `min_mmr` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `lr_mmr_slope` float NOT NULL DEFAULT '0',
+  `lr_mmr_intercept` float NOT NULL DEFAULT '0',
+  `longest_wining_streak` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `longest_losing_streak` tinyint(3) NOT NULL DEFAULT '0',
+  `instant_left_games` tinyint(3) NOT NULL DEFAULT '0',
+  `guessed_games` tinyint(3) NOT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8
+COLLATE=utf8_general_ci;"""
+
+
 def init(host='', user='', passwd='', db=''):
     if host:
         mysql_credentials['host'] = host
     if user:
         mysql_credentials['user'] = user
     if passwd:
-        mysql_credentials['passwd'] = db
+        mysql_credentials['passwd'] = passwd
     if db:
         mysql_credentials['db'] = db
 
-def setup():
-    pass
+
+def setup(apikey, apisecret, no_games=250, no_critical_games=50,
+          no_league_worker=7, no_ladder_worker=16, no_player_worker=4,
+          no_meta_worker=4):
+    connection = pymysql.connect(
+        host=mysql_credentials['host'], user=mysql_credentials['user'],
+        password=mysql_credentials['passwd'], db=mysql_credentials['db'],
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor)
+    try:
+        with connection.cursor() as cursor:
+            for key, structure in table_structure.items():
+                sql = structure.format(mysql_tables[key])
+                cursor.execute(sql)
+            connection.commit()
+
+            sql = "REPLACE INTO `{}` (`name`, `value`) VALUES (%s, %s)"
+            sql = sql.format(mysql_tables['config'])
+            cursor.execute(sql, ('apikey', apikey))
+            cursor.execute(sql, ('apisecret', apisecret))
+            cursor.execute(sql, ('no_games', no_games))
+            cursor.execute(sql, ('no_critical_games', no_critical_games))
+            cursor.execute(sql, ('current_season', 35))
+            cursor.execute(sql, ('access_token', ''))
+            cursor.execute(sql, ('no_league_worker', no_league_worker))
+            cursor.execute(sql, ('no_ladder_worker', no_ladder_worker))
+            cursor.execute(sql, ('no_player_worker', no_player_worker))
+            cursor.execute(sql, ('no_meta_worker', no_meta_worker))
+            connection.commit()
+    finally:
+        connection.close()
+
+
+def add_player(player_id=None, realm=1, battle_tag=None):
+    connection = pymysql.connect(
+        host=mysql_credentials['host'], user=mysql_credentials['user'],
+        password=mysql_credentials['passwd'], db=mysql_credentials['db'],
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor)
+    try:
+        if player_id is not None:
+            sql = "INSERT INTO `{}` (`sc2_player_id`, `realm`) VALUES (%s, %s)"
+            with connection.cursor() as cursor:
+                sql = sql.format(mysql_tables['player'])
+                cursor.execute(sql, (player_id, realm))
+            connection.commit()
+        elif battle_tag is not None:
+            with connection.cursor() as cursor:
+                sql = "INSERT INTO `{}` (`battle_tag`) VALUES (%s)"
+                sql = sql.format(mysql_tables['player'])
+                cursor.execute(sql, (battle_tag))
+            connection.commit()
+        else:
+            raise ValueError(
+                'Enter either player_id (and realm) or battle_tag.')
+    finally:
+        connection.close()
+
 
 def run():
     """Update and process data."""
     start_time = time.time()
     logger.info("Starting job!")
     try:
-        db = MySQLdb.connect(host=mysql_credentials['host'], user=mysql_credentials['user'],
-                             passwd=mysql_credentials['passwd'], db=mysql_credentials['db'])
+        db = pymysql.connect(
+            host=mysql_credentials['host'], user=mysql_credentials['user'],
+            password=mysql_credentials['passwd'], db=mysql_credentials['db'],
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor)
     except Exception as e:
         logger.exception("message")
     else:
@@ -88,6 +215,7 @@ def run():
                  " ({} retries) in {:.2f} seconds.").format(
         requestCounter, retryCounter,
         time.time() - start_time))
+
 
 def compose_mysql_update_cmd(table, update_dic, where_dic, skip_keys=[]):
     """Compose a mysql update cmd from dictionaries."""
@@ -133,14 +261,15 @@ def compose_mysql_insert_cmd(table, insert_dic, skip_keys=[]):
             continue
         insert_keys.append(key)
         insert_values.append(value)
-
-    query = "INSERT INTO `{}` (".format(table)
+    query = 'INSERT INTO `{}`'.format(table)
+    query = query + ' ('
     query = query + ", ".join(insert_keys)
     query = query + ") VALUES ("
     query = query + ", ".join(len(insert_keys) * ["%s"]) + ")"
     data = tuple(insert_values)
 
     return query, data
+
 
 class WorkFlowController:
     """Control the work flow."""
@@ -164,13 +293,6 @@ class WorkFlowController:
         self.retryCounter = 0
         self.db = db
         self.worker = []
-
-        # Use utf8 encoding in MySQLdb (important)
-        db.set_character_set('utf8')
-        self.dbc = db.cursor(MySQLdb.cursors.DictCursor)
-        self.dbc.execute('SET NAMES utf8;')
-        self.dbc.execute('SET CHARACTER SET utf8;')
-        self.dbc.execute('SET character_set_connection=utf8;')
 
         # Load Config from MySQL db
         self.loadConfig()
@@ -210,13 +332,14 @@ class WorkFlowController:
 
     def getAccessToken(self):
         """Get a new bnet api access token."""
-        response = requests.request('POST',
-                                    'https://eu.battle.net/oauth/token',
-                                    auth=HTTPBasicAuth(self.config['apikey'],
-                                                       self.config['apisecret']),
-                                    params=dict(
-                                        grant_type='client_credentials'),
-                                    allow_redirects=False)
+        response = requests.request(
+            'POST',
+            'https://eu.battle.net/oauth/token',
+            auth=HTTPBasicAuth(self.config['apikey'],
+                               self.config['apisecret']),
+            params=dict(
+                grant_type='client_credentials'),
+            allow_redirects=False)
 
         response.raise_for_status()
 
@@ -229,7 +352,8 @@ class WorkFlowController:
                                                {'name': 'access_token'})
 
         with self.dbLock:
-            self.dbc.execute(query, data)
+            with self.db.cursor() as cursor:
+                cursor.execute(query, data)
             self.db.commit()
 
         logger.info("Retrieved new access_token")
@@ -250,21 +374,22 @@ class WorkFlowController:
                                                {'name': 'current_season'})
 
         with self.dbLock:
-            self.dbc.execute(query, data)
+            with self.db.cursor() as cursor:
+                cursor.execute(query, data)
             self.db.commit()
 
     def startThreads(self):
         """Start various parallel threads that do the work."""
-        for leagueID in range(7):
+        for leagueID in range(self.config.get('no_league_worker', 7)):
             self.worker.append(LeagueDataWorker(self))
 
-        for i in range(16):
+        for i in range(self.config.get('no_ladder_worker', 16)):
             self.worker.append(LadderDataWorker(self))
 
-        for i in range(4):
+        for i in range(self.config.get('no_player_worker', 4)):
             self.worker.append(PlayerDataWorker(self))
 
-        for i in range(4):
+        for i in range(self.config.get('no_meta_worker', 4)):
             self.worker.append(MetaDataWorker(self))
 
     def doJob(self):
@@ -272,28 +397,32 @@ class WorkFlowController:
         self.checkAccessToken()
         self.getPlayerIDs()
         self.getCurrentSeason()
-        self.startThreads()
+        if len(self.playerIDs) > 0:
+            self.startThreads()
 
-        # Search all leagues from bronze (0) to grandmaster (6)
-        for leagueID in range(7):
-            self.leagueQueue.put(
-                {'season_id': self.currentSeason, 'league_id': leagueID})
+            try:
+                # Search all leagues from bronze (0) to grandmaster (6)
+                for leagueID in range(7):
+                    self.leagueQueue.put(
+                        {'season_id': self.currentSeason,
+                         'league_id': leagueID})
 
-        # Wait for workers to finish their work
-        self.leagueQueue.join()
-        self.ladderQueue.join()
-        self.playerQueue.join()
-        self.metaQueue.join()
-
-        self.stopThreads()
+                # Wait for workers to finish their work
+                self.leagueQueue.join()
+                self.ladderQueue.join()
+                self.playerQueue.join()
+                self.metaQueue.join()
+            finally:
+                self.stopThreads()
 
     def getPlayerIDs(self):
         """Get relevant player ids."""
 
         with self.dbLock:
             query = "SELECT sc2_player_id, battle_tag  FROM `{}`"
-            self.dbc.execute(query.format(dbconfig.dbs['player']))
-            data = self.dbc.fetchall()
+            with self.db.cursor() as cursor:
+                cursor.execute(query.format(mysql_tables['player']))
+                data = cursor.fetchall()
         for row in data:
             if row['sc2_player_id'] == 0:
                 id = row['battle_tag']
@@ -309,9 +438,10 @@ class WorkFlowController:
     def loadConfig(self):
         """Load config form mysql db."""
         with self.dbLock:
-            query = "SELECT name, value FROM `{}`"
-            self.dbc.execute(query.format(dbconfig.dbs['config']))
-            data = self.dbc.fetchall()
+            with self.db.cursor() as cursor:
+                query = "SELECT name, value FROM `{}`"
+                cursor.execute(query.format(mysql_tables['config']))
+                data = cursor.fetchall()
 
         for item in data:
             try:
@@ -360,8 +490,8 @@ class LeagueDataWorker(threading.Thread):
         leagueID = data['league_id']
         seasonID = data['season_id']
         params = urllib.parse.urlencode(self.controller.dataApiParams)
-        url = "https://eu.api.battle.net/data/sc2/league/{}/201/0/{}?{}".format(
-            seasonID, leagueID, params)
+        url = "https://eu.api.battle.net/data/sc2/league/{}/201/0/{}?{}"
+        url = url.format(seasonID, leagueID, params)
         jsonData, status = self.controller.performApiRequest(url)
         if status != 200:
             raise Exception('Request Error {}'.format(status))
@@ -422,15 +552,16 @@ class LadderDataWorker(threading.Thread):
             raise Exception('Request Error {}'.format(status))
 
         for player in jsonData['team']:
-            # For some reason and since ~ April 2018, there are corrupt datasets
-            # skip these.
+            # For some reason and since ~ April 2018, there are corrupt
+            # datasets - skip these.
             try:
                 player_id = player['member'][0]['legacy_link']['id']
                 bnet_tag = player['member'][0]['character_link']['battle_tag']
             except KeyError:
                 continue
 
-            if player_id in self.controller.playerIDs or bnet_tag in self.controller.playerIDs:
+            if (player_id in self.controller.playerIDs or
+                    bnet_tag in self.controller.playerIDs):
                 data = {}
                 data['sc2_player_id'] = player_id
                 data['sc2_name'] = player['member'][0]['legacy_link']['name']
@@ -441,7 +572,9 @@ class LadderDataWorker(threading.Thread):
                 data['ladder_id'] = inputData['ladder_id']
                 data['last_active_season'] = inputData['season_id']
                 data['league_tier'] = inputData['tier_id']
-                data['race'] = player['member'][0]['played_race_count'][0]['race']['en_US']
+                data['race'] = (player['member'][0]
+                                ['played_race_count'][0]
+                                ['race']['en_US'])
                 data['wins'] = player['wins']
                 data['losses'] = player['losses']
                 data['ties'] = player['ties']
@@ -492,19 +625,20 @@ class PlayerDataWorker(threading.Thread):
         query = "SELECT * FROM `{}` WHERE " +\
             "(sc2_player_id='{}' OR battle_tag='{}') " +\
             "AND (race = '{}' OR race = '') LIMIT 1"
-        self.controller.dbc.execute(query.format(
-            dbconfig.dbs['player'],
-            inputData['sc2_player_id'],
-            inputData['battle_tag'],
-            inputData['race']))
-        if self.controller.dbc.rowcount > 0:
-            data = self.controller.dbc.fetchone()
-            self.controller.dbLock.release()
-            self.processData(data, inputData)
-            self.updateData(inputData, data['race'])
-        else:
-            self.controller.dbLock.release()
-            self.insertData(inputData)
+        with self.controller.db.cursor() as cursor:
+            cursor.execute(query.format(
+                mysql_tables['player'],
+                inputData['sc2_player_id'],
+                inputData['battle_tag'],
+                inputData['race']))
+            if cursor.rowcount > 0:
+                data = cursor.fetchone()
+                self.controller.dbLock.release()
+                self.processData(data, inputData)
+                self.updateData(inputData, data['race'])
+            else:
+                self.controller.dbLock.release()
+                self.insertData(inputData)
 
     def updateData(self, inputData, race=''):
         """Update data in mysql player table."""
@@ -523,7 +657,8 @@ class PlayerDataWorker(threading.Thread):
         data += (inputData['sc2_player_id'], inputData['battle_tag'])
 
         with self.controller.dbLock:
-            self.controller.dbc.execute(query, data)
+            with self.controller.db.cursor() as cursor:
+                cursor.execute(query, data)
             self.controller.db.commit()
 
     def insertData(self, inputData):
@@ -538,7 +673,8 @@ class PlayerDataWorker(threading.Thread):
         query, data = compose_mysql_insert_cmd('player', inputData, skip)
 
         with self.controller.dbLock:
-            self.controller.dbc.execute(query, data)
+            with self.controller.db.cursor() as cursor:
+                cursor.execute(query, data)
             self.controller.db.commit()
 
     def processData(self, oldData, newData):
@@ -546,8 +682,10 @@ class PlayerDataWorker(threading.Thread):
         if oldData['last_active_season'] < newData['last_active_season']:
             # Player is for the first time active in the current season
             logger.info(
-                "{} active for the first time this season.".format(oldData['ID']))
-            if oldData['last_active_season'] + 1 == newData['last_active_season']:
+                "{} active for the first time this season.".format(
+                    oldData['ID']))
+            if (oldData['last_active_season'] + 1 ==
+                    newData['last_active_season']):
                 # Think about processing season endpoint of
                 # last season and look for new games here.
                 # But if the script is executed regularly such
@@ -564,8 +702,9 @@ class PlayerDataWorker(threading.Thread):
                 newData['losses'] += misLosses
                 newData['ties'] += misTies
                 if(misWins > 0 or misLosses > 0 or misTies > 0):
-                    logger.info(("{}: Found additional matches in the " +
-                                 "data of last season ({} wins, {} losses, {} ties)!").format(
+                    logger.info(("{}: Found additional matches in the "
+                                 "data of last season ({} wins,"
+                                 " {} losses, {} ties)!").format(
                         oldData['ID'], misWins, misLosses, misTies))
             oldData['wins'] = 0
             oldData['losses'] = 0
@@ -598,8 +737,8 @@ class PlayerDataWorker(threading.Thread):
             raise Exception('Request Error {}'.format(status))
 
         for player in jsonData['team']:
-            # For some reason and since ~ April 2018, there are corrupt datasets
-            # skip these.
+            # For some reason and since ~ April 2018, there are corrupt
+            #  datasets - skip these.
             try:
                 player_id = player['member'][0]['legacy_link']['id']
             except KeyError:
@@ -609,13 +748,16 @@ class PlayerDataWorker(threading.Thread):
                 data['sc2_player_id'] = player_id
                 data['sc2_name'] = player['member'][0]['legacy_link']['name']
                 data['realm'] = player['member'][0]['legacy_link']['realm']
-                data['battle_tag'] = player['member'][0]['character_link']['battle_tag']
+                data['battle_tag'] = (player['member'][0]
+                                      ['character_link']['battle_tag'])
                 data['mmr'] = player['rating']
                 data['league'] = oldData['league']
                 data['ladder_id'] = oldData['ladder_id']
                 data['last_active_season'] = oldData['last_active_season']
                 data['league_tier'] = oldData['league_tier']
-                data['race'] = player['member'][0]['played_race_count'][0]['race']['en_US']
+                data['race'] = (player['member'][0]
+                                ['played_race_count'][0]
+                                ['race']['en_US'])
                 data['wins'] = player['wins']
                 data['losses'] = player['losses']
                 data['ties'] = player['ties']
@@ -665,7 +807,8 @@ class PlayerDataWorker(threading.Thread):
         """Get match history of a player."""
         matches = []
 
-        # Blizzard has an encoding bug in this part of their api, trying to reproduce this bug
+        # Blizzard has an encoding bug in this part of their api;
+        # trying to reproduce this bug
         names = [name, name.encode("utf-8").decode('iso-8859-1')]
 
         # Some player have a different realms (most 1, some 2; is 3+ possible?)
@@ -678,15 +821,18 @@ class PlayerDataWorker(threading.Thread):
 
         for name, realm in product(names, realms):
             params = urllib.parse.urlencode(self.controller.sc2ApiParams)
-            url = "https://eu.api.battle.net/sc2/profile/{}/{}/{}/matches?{}".format(
+            url = "https://eu.api.battle.net/sc2/profile/{}/{}/{}/matches?{}"
+            url = url.format(
                 id, realm, name, params)
             jsonData, status = self.controller.performApiRequest(url)
-
+            # Player found.
             if status == 200:
-                break  # Player found.
+                break
+            # Try other options.
             elif status == 404:
-                continue  # Try other options.
-            elif status == 500:  # Internal Server Error - no matches will be available
+                continue
+            # Internal Server Error - no matches will be available
+            elif status == 500:
                 return matches
             else:
                 raise Exception('Request Error {} for {}'.format(status, url))
@@ -705,7 +851,8 @@ class PlayerDataWorker(threading.Thread):
         return matches
 
     def guessGames(self, oldData, newData, new):
-        """Guess order, time and mmr change of games if more than one game was played."""
+        """Guess order, time and mmr change of games"""
+        """ if more than one game was played."""
         matchHistory = self.requestMatchHistory(
             newData['sc2_player_id'],
             newData['sc2_name'].split("#")[0],
@@ -728,7 +875,8 @@ class PlayerDataWorker(threading.Thread):
         buffer = timedelta(seconds=10)
 
         # Check if the most recent game lacks behind in the match history
-        if len(matchHistory) == 0 or matchHistory[0]['date'] < newData['last_played'] - buffer:
+        if (len(matchHistory) == 0 or
+                matchHistory[0]['date'] < newData['last_played'] - buffer):
             if wins > wins_found and newData['current_win_streak'] > 0:
                 wins_found += 1
                 matches.append({'date': newData['last_played'], 'result': 1})
@@ -741,8 +889,9 @@ class PlayerDataWorker(threading.Thread):
                 ties_found += 0
                 matches.append({'date': newData['last_played'], 'result': 0})
             else:
-                logger.warning(("{}: Most recent game is missing in match history" +
-                                ", but does not fit in.").format(oldData['ID']))
+                logger.warning((
+                    "{}: Most recent game is missing in match history,"
+                    " but does not fit in.").format(oldData['ID']))
 
         # Search for the matches in match history (last 25 games, including
         # custom games, team games, unranked, offrace) that  fit to the
@@ -771,9 +920,12 @@ class PlayerDataWorker(threading.Thread):
             # than 25 games since the last refresh or the match
             # history is not available for this player, there are
             # missing games in the match history. These are guessed to be very
-            # close to the last game of the match history and in alternating order.
-            logger.info(("{}: {} missing games in match " +
-                         "history - more guessing!").format(oldData['ID'], missing_games))
+            # close to the last game of the match history and in alternating
+            # order.
+            logger.info((
+                "{}: {} missing games in match " +
+                "history - more guessing!").format(
+                oldData['ID'], missing_games))
 
             try:
                 delta = (last_played - oldData['last_played']) / missing_games
@@ -783,16 +935,19 @@ class PlayerDataWorker(threading.Thread):
             if delta > timedelta(minutes=3):
                 delta = timedelta(minutes=3)
 
-            while wins_found < wins or losses_found < losses or ties_found < ties:
+            while (wins_found < wins or
+                   losses_found < losses or
+                   ties_found < ties):
 
                 if wins_found < wins:
                     last_played = last_played - delta
                     matches.append({'date': last_played, 'result': 1})
                     wins_found += 1
 
-                if wins_found < wins and wins - wins_found > losses - losses_found:
-                    # If there are more wins than losses add a second win before
-                    # the next loss.
+                if (wins_found < wins and
+                        wins - wins_found > losses - losses_found):
+                    # If there are more wins than losses add
+                    # a second win before the next loss.
                     last_played = last_played - delta
                     matches.append({'date': last_played, 'result': 1})
                     wins_found += 1
@@ -804,7 +959,8 @@ class PlayerDataWorker(threading.Thread):
                     matches.append({'date': last_played, 'result': -1})
                     losses_found += 1
 
-                if losses_found < losses and wins - wins_found < losses - losses_found:
+                if (losses_found < losses and
+                        wins - wins_found < losses - losses_found):
                     # Add second lose
                     last_played = last_played - delta
                     matches.append({'date': last_played, 'result': -1})
@@ -852,9 +1008,11 @@ class PlayerDataWorker(threading.Thread):
             # should be accurate (but not mmr change).
             guess = not (idx + 1 == len(matches))
             self.insertGame(oldData['ID'], match['result'],
-                            match['date'], MMR, estMMRchange, guess, max_length)
+                            match['date'], MMR, estMMRchange,
+                            guess, max_length)
 
-    def insertGame(self, playerID, result, played, mmr, mmr_change, guess, max_length):
+    def insertGame(self, playerID, result, played,
+                   mmr, mmr_change, guess, max_length):
         """Insert a game into mysql table matchhistory."""
         inputData = {}
         inputData['playerID'] = playerID
@@ -868,7 +1026,8 @@ class PlayerDataWorker(threading.Thread):
         query, data = compose_mysql_insert_cmd('matchhistory', inputData)
 
         with self.controller.dbLock:
-            self.controller.dbc.execute(query, data)
+            with self.controller.db.cursor() as cursor:
+                cursor.execute(query, data)
             self.controller.db.commit()
 
 
@@ -918,22 +1077,26 @@ class MetaDataWorker(threading.Thread):
                     "foo);"
             query = query.format(playerID,
                                  self.controller.config['no_games'],
-                                 dbconfig.dbs['matchhistory'])
-            self.controller.dbc.execute(query)
+                                 mysql_tables['matchhistory'])
+            with self.controller.db.cursor() as cursor:
+                cursor.execute(query)
             self.controller.db.commit()
 
-            query = "SELECT * FROM `{}` " +\
-                    "WHERE `playerID` = {} ORDER BY `played` DESC LIMIT 100"
-            self.controller.dbc.execute(query.format(
-                dbconfig.dbs['matchhistory'], playerID))
-            matches = self.controller.dbc.fetchall()
-            rowcount = self.controller.dbc.rowcount
+            with self.controller.db.cursor() as cursor:
+                query = (
+                    "SELECT * FROM `{}` "
+                    "WHERE `playerID` = {} ORDER BY `played` DESC LIMIT 100")
+                cursor.execute(query.format(
+                    mysql_tables['matchhistory'], playerID))
+                matches = cursor.fetchall()
+                rowcount = cursor.rowcount
 
             query = "SELECT ID FROM `{}` WHERE `playerID` = {} LIMIT 1".format(
-                dbconfig.dbs['metadata'],
+                mysql_tables['metadata'],
                 playerID)
-            self.controller.dbc.execute(query)
-            update = bool(self.controller.dbc.rowcount)
+            with self.controller.db.cursor() as cursor:
+                cursor.execute(query)
+                update = bool(cursor.rowcount)
 
         if rowcount > 0:
 
@@ -948,7 +1111,8 @@ class MetaDataWorker(threading.Thread):
                 query, data = compose_mysql_insert_cmd('metadata', input_data)
 
             with self.controller.dbLock:
-                self.controller.dbc.execute(query, data)
+                with self.controller.db.cursor() as cursor:
+                    cursor.execute(query, data)
                 self.controller.db.commit()
 
     def analyzeMatches(self, matches):
@@ -1024,8 +1188,10 @@ class MetaDataWorker(threading.Thread):
             out['lr_mmr_slope'] = numerator / denominator
             out['lr_mmr_intercept'] = ybar - out['lr_mmr_slope'] * xbar
 
-        out['sd_mmr'] = round(math.sqrt(expected_mmr_value2 -
-                                        expected_mmr_value * expected_mmr_value))
+        out['sd_mmr'] = round(
+            math.sqrt(expected_mmr_value2 -
+                      expected_mmr_value *
+                      expected_mmr_value))
         critical_idx = min(self.controller.config['no_critical_games'],
                            out['games_available']) - 1
         out['critical_game_played'] = matches[critical_idx]["played"]
