@@ -5,7 +5,7 @@ Python script that when executed regularly keeps track of large amount StarCraft
 Install this Python 3 package via `pip` by executing `pip install sc2monitor`
 
 ## Setup
-To setup the MySQL tables for you execute the following script once
+To setup the MySQL tables execute the following script once
 ```python
 import sc2monitor
 
@@ -29,6 +29,19 @@ sc2monitor.init(host='mysql-host',
                 db='mysql-database')
 sc2monitor.run()
 ```
-You can add players to monitor either by their sc2_player_id (and realm) or by their Battletag via executing, e.g., `sc2monitor.add_player(player_id=221986, realm=1)` or `sc2monitor.add_player(battle_tag='pressure#2380')`, or by adding a row into player MySQL table with either `sc2_player_id` or `battle_tag` entered.
+
+If not executed reguarly the script will try to make an educated guess for games played since the last execution.
+
+You can add players to monitor either by their SC2 player ID (and realm), for instance for http://eu.battle.net/sc2/en/profile/221986/1/pressure/ the player ID is 221986 and the realm is 1, or by their Battletag via executing, e.g.,
+```python
+sc2monitor.add_player(player_id=221986, realm=1)
+```
+```python
+sc2monitor.add_player(battle_tag='pressure#2380')
+```
+or by adding a row into  MySQL table *player* with either `sc2_player_id` or `battle_tag` entered.
+
+## Data
+The collected data (including statistics) can be accessed via the MySQL tables.
 
 
