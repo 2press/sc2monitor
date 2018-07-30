@@ -2,7 +2,7 @@
 Python script that when executed regularly keeps track of large amount StarCraft 2 accounts on the 1vs1 ladder
 
 ## Setup
-Once you have let the script setup the MySQL tables for you by executing
+To setup the MySQL tables for you execute the following script once
 ```python
 import sc2monitor
 
@@ -13,7 +13,7 @@ sc2monitor.init(host='mysql-host',
 sc2monitor.setup(apikey='your-bnet-api-key',
                  apisecret='your-bnet-api-secret')
 ```
-You have to create your API-key `your-bnet-api-key` and secret `your-bnet-api-secret` by registering this application at https://dev.battle.net/member/register
+Your API-key `your-bnet-api-key` and secret `your-bnet-api-secret` have to be created by registering an application at https://dev.battle.net/member/register
 
 ## Execution
 To collect data run the following script regularly (every 5-15 minutes), e.g. via cronjob:
