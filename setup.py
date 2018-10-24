@@ -11,7 +11,7 @@ setup(name='sc2monitor',
       description=('When executed regularly keeps track of large'
                    ' amount StarCraft 2 accounts on the 1vs1 ladder'),
       long_description=long_description,
-      long_description_content_type='text/markdown'
+      long_description_content_type='text/markdown',
       url='https://github.com/2press/sc2monitor',
       author='pressure',
       author_email='pres.sure@ymail.com',
