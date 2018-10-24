@@ -7,7 +7,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='sc2monitor',
-      version='0.1',
+      version='0.1.1',
       description=('When executed regularly keeps track of large'
                    ' amount StarCraft 2 accounts on the 1vs1 ladder'),
       long_description=long_description,
