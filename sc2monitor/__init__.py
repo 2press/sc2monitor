@@ -789,9 +789,10 @@ class PlayerDataWorker(threading.Thread):
             result = wins - losses
             try:
                 delta = newData['last_played'] - oldData['last_played']
+                max_length = delta.total_seconds()
             except Exception:
-                delta = 60 * 10
-            max_length = delta.total_seconds()
+                max_length = 60 * 10
+
             self.insertGame(oldData['ID'], result, newData['last_played'],
                             newData['mmr'],
                             newData['mmr'] - oldData['mmr'],
