@@ -75,7 +75,12 @@ class Controller:
                 return entry.value
 
     def set_config(self, key, value, commit=True):
-        self.db_session.add(model.Config(key=key, value=value))
+        entry = self.db_session.query(
+            model.Config).filter(model.Config.key == key).scalar()
+        if not entry:
+            self.db_session.add(model.Config(key=key, value=value))
+        else:
+            entry.value = value
         if commit:
             self.db_session.commit()
 
@@ -87,13 +92,7 @@ class Controller:
                 raise ValueError(
                     "Invalid configuration key '{}' (valid keys: {})".format(
                         key, ', '.join(valid_keys)))
-            entry = self.get_config(
-                key, raise_key_error=False, return_object=True)
-            if entry is None:
-                self.set_config(key, value,
-                                commit=False)
-            elif entry.value != value:
-                entry.value = value
+            self.set_config(key, value, commit=False)
         self.db_session.commit()
         if self.sc2api:
             self.sc2api.read_config()
