@@ -80,8 +80,7 @@ class SC2API:
 
         self._access_token = data.get('access_token')
         self._access_token_checked = True
-        self._controller.set_config(
-            'access_token', self._access_token, update=True)
+        self._controller.set_config('access_token', self._access_token)
         logger.info('New access token received.')
 
     def parse_profile_url(self, url):
