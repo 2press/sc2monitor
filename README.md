@@ -20,7 +20,7 @@ sc2monitor.init(host='db-host',
                 apisecret='your-bnet-api-secret')
 sc2monitor.run()
 ```
-Your API-key `your-bnet-api-key` and secret `your-bnet-api-secret` have to be created by registering an application at https://develop.battle.net/access/ and have to be passed only once or when you want to change them. If not specified `mysql+pymysql` will be used as database protocol - other protocol options can be found at `https://docs.sqlalchemy.org/en/latest/dialects/`.
+Your API-key `your-bnet-api-key` and secret `your-bnet-api-secret` have to be created by registering an application at https://develop.battle.net/access/ and have to be passed only once or when you want to change them. If not specified `mysql+pymysql` will be used as database protocol - other protocol options can be found at https://docs.sqlalchemy.org/en/latest/dialects/.
 
 If not executed reguarly the script will try to make an educated guess for games played since the last execution.
 
