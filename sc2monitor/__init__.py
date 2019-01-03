@@ -29,7 +29,7 @@ def init(host='', user='', passwd='', db='', protocol='',
     if api_key:
         api_credentials['key'] = api_key
     if api_secret:
-        api_credentials['key'] = api_secret
+        api_credentials['secret'] = api_secret
 
 
 def add_player(url):
