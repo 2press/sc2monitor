@@ -1,5 +1,5 @@
 # sc2monitor
-Python (>=3.7.2) script that when executed regularly keeps track of medium amount StarCraft 2 accounts on the 1vs1 ladder
+Python (>=3.7.1) script that when executed regularly keeps track of medium amount StarCraft 2 accounts on the 1vs1 ladder
 
 ## Installation
 Install this Python 3 package via `pip` by executing `pip install sc2monitor`
