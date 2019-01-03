@@ -1,0 +1,578 @@
+import asyncio
+import logging
+import math
+import time
+from datetime import datetime, timedelta
+from operator import itemgetter
+
+import aiohttp
+import sc2monitor.model as model
+from sc2monitor.handlers import SQLAlchemyHandler
+from sc2monitor.sc2api import SC2API
+
+logger = logging.getLogger(__name__)
+sql_logger = logging.getLogger()
+
+
+class Controller:
+
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+        self.sc2api = None
+        self.db_session = None
+
+    async def __aenter__(self):
+        self.http_session = aiohttp.ClientSession()
+
+        self.create_db_session()
+
+        return self
+
+    def create_db_session(self):
+        self.db_session = model.create_db_session(
+            db=self.kwargs.pop('db', ''),
+            encoding=self.kwargs.pop('encoding', ''))
+        self.handler = SQLAlchemyHandler(self.db_session)
+        self.handler.setLevel(logging.INFO)
+        sql_logger.setLevel(logging.INFO)
+        sql_logger.addHandler(self.handler)
+
+        if len(self.kwargs) > 0:
+            self.setup(**self.kwargs)
+        self.sc2api = SC2API(self)
+        self.cache_matches = self.get_config(
+            'cache_matches',
+            default_value=500)
+        self.analyze_matches = self.get_config(
+            'analyze_matches',
+            default_value=100)
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.http_session.close()
+        self.db_session.commit()
+        self.db_session.close()
+        self.db_session = None
+
+    def get_config(self, key, default_value=None,
+                   raise_key_error=True,
+                   return_object=False):
+        if default_value is not None:
+            raise_key_error = False
+        entry = self.db_session.query(
+            model.Config).filter(model.Config.key == key).scalar()
+        if not entry:
+            if raise_key_error:
+                raise ValueError('Unknown config key "{}"'.format(key))
+            else:
+                if return_object:
+                    return None
+                else:
+                    return '' if default_value is None else default_value
+        else:
+            if return_object:
+                return entry
+            else:
+                return entry.value
+
+    def set_config(self, key, value, commit=True):
+        self.db_session.add(model.Config(key=key, value=value))
+        if commit:
+            self.db_session.commit()
+
+    def setup(self, **kwargs):
+        valid_keys = ['api_key', 'api_secret',
+                      'cache_matches', 'analyze_matches']
+        for key, value in kwargs.items():
+            if key not in valid_keys:
+                raise ValueError(
+                    "Invalid configuration key '{}' (valid keys: {})".format(
+                        key, ', '.join(valid_keys)))
+            entry = self.get_config(
+                key, raise_key_error=False, return_object=True)
+            if entry is None:
+                self.set_config(key, value,
+                                commit=False)
+            elif entry.value != value:
+                entry.value = value
+        self.db_session.commit()
+        if self.sc2api:
+            self.sc2api.read_config()
+
+    def add_player(self, url, race=model.Race['Random']):
+        close_db = False
+        if self.db_session is None:
+            self.create_db_session()
+            close_db = True
+        server, realm, player_id = self.sc2api.parse_profile_url(url)
+        count = self.db_session.query(model.Player).filter(
+            model.Player.realm == realm,
+            model.Player.player_id == player_id,
+            model.Player.server == server).count()
+        if count == 0:
+            new_player = model.Player(
+                realm=realm,
+                player_id=player_id,
+                server=server,
+                race=race)
+            self.db_session.add(new_player)
+            self.db_session.commit()
+        if close_db:
+            self.db_session.close()
+            self.db_session = None
+
+    async def query_player(self, player: model.Player):
+        complete_data = []
+        for ladder in await self.sc2api.get_ladders(player):
+            async for data in self.sc2api.get_ladder_data(player, ladder):
+                current_player = await self.get_player_with_race(player, data)
+                missing_games, new = self.count_missing_games(
+                    current_player, data)
+                if missing_games['Total'] > 0:
+                    complete_data.append({'player': current_player,
+                                          'new_data': data,
+                                          'missing': missing_games,
+                                          'Win': 0,
+                                          'Loss': 0})
+
+        if len(complete_data) > 0:
+            await self.process_player(complete_data, new)
+        elif (not player.name or
+                player.refreshed <= datetime.now() - timedelta(days=1)):
+            await self.update_player_name(player)
+
+    async def update_player_name(self, player: model.Player, name=''):
+        if not name:
+            metadata = await self.sc2api.get_metadata(player)
+            name = metadata['name']
+        for tmp_player in self.db_session.query(model.Player).filter(
+                model.Player.player_id == player.player_id,
+                model.Player.realm == player.realm,
+                model.Player.server == player.server).all():
+            logger.info("{}: Updating name to '{}'".format(
+                tmp_player.id, name))
+            tmp_player.name = name
+        self.db_session.commit()
+
+    async def process_player(self, complete_data, new=False):
+        match_history = await self.sc2api.get_match_history(
+            complete_data[0]['player'])
+
+        for match_key, match in enumerate(match_history):
+            positive = []
+            for data_key, data in enumerate(complete_data):
+                needed = data['missing'][match['result'].describe()] > 0
+                try:
+                    datetime_check = (match['datetime'] -
+                                      data['player'].last_played >
+                                      timedelta(seconds=-30))
+                except TypeError:
+                    datetime_check = True
+                if (needed and datetime_check):
+                    positive.append(data_key)
+            if len(positive) == 0:
+                continue
+            elif len(positive) >= 1:
+                # Choose the race with most missing results.
+                max_missing = 0
+                for key in positive:
+                    tmp_missing = complete_data[key][
+                        'missing'][match['result'].describe()]
+                    if tmp_missing > max_missing:
+                        data_key = key
+                        max_missing = tmp_missing
+
+                complete_data[data_key][
+                    'missing'][match['result'].describe()] -= 1
+                complete_data[data_key][match['result'].describe()] += 1
+                try:
+                    complete_data[data_key]['games'].insert(0, match)
+                except KeyError:
+                    complete_data[data_key]['games'] = [match]
+
+        try:
+            last_played = match['datetime']
+        except Exception:
+            last_played = datetime.now()
+
+        for race_player in complete_data:
+            race_player['missing']['Total'] = race_player['missing']['Win'] + \
+                race_player['missing']['Loss']
+            if race_player['missing']['Total'] > 0:
+                if new:
+                    logger.info(
+                        ('{}: Ignoring {} games missing in'
+                         ' match history ({}) of new player.').format(
+                            race_player['player'].id,
+                            race_player['missing']['Total'],
+                            len(match_history)))
+                else:
+                    self.guess_games(race_player, last_played)
+            self.guess_mmr_changes(race_player)
+            await self.update_player(race_player)
+            self.calc_statistics(race_player['player'])
+
+    async def update_player(self, player: model.Player):
+        player['player'].mmr\
+            = player['new_data']['mmr']
+        player['player'].ladder_id\
+            = player['new_data']['ladder_id']
+        player['player'].ladder_joined\
+            = player['new_data']['joined']
+        player['player'].wins\
+            = player['new_data']['wins']
+        player['player'].losses\
+            = player['new_data']['losses']
+        if player['player'].name != player['new_data']['name']:
+            await self.update_player_name(
+                player['player'],
+                player['new_data']['name'])
+        if (not player['player'].last_played or
+                player['player'].ladder_joined >
+                player['player'].last_played):
+            player['player'].last_played = player['player'].ladder_joined
+        self.db_session.commit()
+
+    def calc_statistics(self, player: model.Player):
+        self.db_session.refresh(player)
+        if not player.statistics:
+            stats = model.Statistics(player=player)
+            self.db_session.add(stats)
+            self.db_session.commit()
+            self.db_session.refresh(stats)
+        else:
+            stats = player.statistics
+
+        matches = self.db_session.query(model.Match).filter(
+            model.Match.player_id == player.id).order_by(
+            model.Match.datetime.desc()).limit(self.analyze_matches).all()
+
+        stats.games_available = len(matches)
+        wma_mmr_denominator = stats.games_available * \
+            (stats.games_available + 1.0) / 2.0
+        stats.max_mmr = player.mmr
+        stats.min_mmr = player.mmr
+        stats.current_mmr = player.mmr
+        wma_mmr = 0.0
+        expected_mmr_value = 0.0
+        expected_mmr_value2 = 0.0
+        current_wining_streak = 0
+        current_losing_streak = 0
+
+        for idx, match in enumerate(matches):
+            if match.result == model.Result.Win:
+                stats.wins += 1
+                current_wining_streak += 1
+                current_losing_streak = 0
+                if current_wining_streak > stats.longest_wining_streak:
+                    stats.longest_wining_streak = current_wining_streak
+            elif match.result == model.Result.Loss:
+                stats.losses += 1
+                current_losing_streak += 1
+                current_wining_streak = 0
+                if current_losing_streak > stats.longest_losing_streak:
+                    stats.longest_losing_streak = current_losing_streak
+                if match.max_length <= 120:
+                    stats.instant_left_games += 1
+
+            if match.guess:
+                stats.guessed_games += 1
+
+            mmr = match.mmr
+            wma_mmr += mmr * \
+                (stats.games_available - idx) / wma_mmr_denominator
+            if stats.max_mmr < mmr:
+                stats.max_mmr = mmr
+            if stats.min_mmr > mmr:
+                stats.min_mmr = mmr
+            expected_mmr_value += mmr / stats.games_available
+            expected_mmr_value2 += mmr * (mmr / stats.games_available)
+
+        if stats.games_available <= 1:
+            stats.lr_mmr_slope = 0.0
+            stats.lr_mmr_intercept = expected_mmr_value
+        else:
+            ybar = expected_mmr_value
+            xbar = -0.5 * (stats.games_available - 1)
+            numerator = 0
+            denominator = 0
+            for x, match in enumerate(matches):
+                x = -x
+                y = match.mmr
+                numerator += (x - xbar) * (y - ybar)
+                denominator += (x - xbar) * (x - xbar)
+
+            stats.lr_mmr_slope = numerator / denominator
+            stats.lr_mmr_intercept = ybar - stats.lr_mmr_slope * xbar
+
+        stats.sd_mmr = round(
+            math.sqrt(expected_mmr_value2 -
+                      expected_mmr_value *
+                      expected_mmr_value))
+        # critical_idx = min(self.controller.config['no_critical_games'],
+        #                   stats.games_available) - 1
+        # stats.critical_game_played = matches[critical_idx]["played"]
+        stats.avg_mmr = expected_mmr_value
+        stats.wma_mmr = wma_mmr
+
+        self.db_session.commit()
+
+    def guess_games(self, complete_data, last_played):
+        # If a player isn't new in the database and has played more
+        # than 25 games since the last refresh or the match
+        # history is not available for this player, there are
+        # missing games in the match history. These are guessed to be very
+        # close to the last game of the match history and in alternating
+        # order.
+        player = complete_data['player']
+        missing_games = complete_data['missing']
+        logger.info((
+            "{}: {} missing games in match " +
+            "history - more guessing!").format(
+            player.id, missing_games['Total']))
+
+        try:
+            delta = (last_played - player.last_played) / missing_games
+        except Exception:
+            delta = timedelta(minutes=3)
+
+        if delta > timedelta(minutes=3):
+            delta = timedelta(minutes=3)
+
+        if delta < timedelta(minutes=0):
+            logger.warning('Timedelta less then zero: {}!'.format(delta))
+
+        while (missing_games['Win'] > 0 or missing_games['Loss'] > 0):
+
+            if missing_games['Win'] > 0:
+                last_played = last_played - delta
+                complete_data['']
+                complete_data['games'].append(
+                    {'datetime': last_played, 'result': model.Result.Win})
+                missing_games['Win'] -= 1
+
+            if (missing_games['Win'] > 0 and
+                    missing_games['Win'] > missing_games['Loss']):
+                # If there are more wins than losses add
+                # a second win before the next loss.
+                last_played = last_played - delta
+                complete_data['games'].append(
+                    {'datetime': last_played, 'result': model.Result.Win})
+                missing_games['Win'] -= 1
+
+            if missing_games['Loss'] > 0:
+                last_played = last_played - delta
+                complete_data['games'].append(
+                    {'datetime': last_played, 'result': model.Result.Loss})
+                missing_games['Loss'] -= 1
+
+            if (missing_games['Loss'] > 0 and
+                    missing_games['Win'] < missing_games['Loss']):
+                # If there are more losses than wins add second loss before
+                # the next win.
+                last_played = last_played - delta
+                complete_data['games'].append(
+                    {'datetime': last_played, 'result': model.Result.Loss})
+                missing_games['Loss'] -= 1
+
+    def guess_mmr_changes(self, complete_data):
+        MMR = complete_data['player'].mmr
+        totalMMRchange = complete_data['new_data']['mmr'] - MMR
+        wins = complete_data['Win']
+        losses = complete_data['Loss']
+        complete_data['games'] = sorted(
+            complete_data['games'], key=itemgetter('datetime'))
+        logger.info('{}: Adding {} wins and {} losses!'.format(
+            complete_data['player'].id, wins, losses))
+
+        if wins + losses <= 0:
+            # No games to guess
+            return
+
+        # Estimate MMR change to be +/-20 for a win and losse, each adjusted
+        # by the average deviation to achive the most recent MMR value.
+        # Is 20 accurate?
+        MMRchange = 20
+
+        if MMR == 0:
+            totalMMRchange = MMRchange * (wins - losses)
+            MMR = complete_data['new_data']['mmr'] - totalMMRchange
+
+        while True:
+            avgMMRadjustment = (totalMMRchange - MMRchange *
+                                (wins - losses)) / (wins + losses)
+
+            # Make sure that sign of MMR change is correct
+            if abs(avgMMRadjustment) >= MMRchange and MMRchange <= 50:
+                MMRchange += 1
+                logger.info("{}: Adjusting avg. MMR change to {}".format(
+                    complete_data['player'].id, MMRchange))
+            else:
+                break
+
+        last_played = complete_data['player'].last_played
+
+        previous_match = self.db_session.query(model.Match).\
+            filter(model.Match.player_id ==
+                   complete_data['player'].id).\
+            order_by(model.Match.datetime.desc()).limit(1).scalar()
+
+        if not previous_match:
+            logger.warning('{}: No previous match found.'.format(
+                complete_data['player'].player_id))
+
+        for idx, match in enumerate(complete_data['games']):
+            estMMRchange = round(
+                MMRchange * match['result'].change() + avgMMRadjustment)
+            MMR = MMR + estMMRchange
+            try:
+                delta = match['datetime'] - last_played
+            except Exception:
+                delta = timedelta(minutes=3)
+            last_played = match['datetime']
+            max_length = delta.total_seconds()
+            # Don't mark the most recent game as guess, as time and mmr value
+            # should be accurate (but not mmr change).
+            guess = not (idx + 1 == len(complete_data['games']))
+            alpha = 2.0 / (100.0 + 1.0)
+            if previous_match and previous_match.ema_mmr > 0.0:
+                delta = MMR - previous_match.ema_mmr
+                ema_mmr = previous_match.ema_mmr + alpha * delta
+                emvar_mmr = (1.0 - alpha) * \
+                    (previous_match.emvar_mmr + alpha * delta * delta)
+            else:
+                ema_mmr = MMR
+                emvar_mmr = 0.0
+
+            new_match = model.Match(
+                player=complete_data['player'],
+                result=match['result'],
+                datetime=match['datetime'],
+                mmr=MMR,
+                mmr_change=estMMRchange,
+                guess=guess,
+                ema_mmr=ema_mmr,
+                emvar_mmr=emvar_mmr,
+                max_length=max_length)
+            complete_data['player'].last_played = match['datetime']
+            self.db_session.add(new_match)
+            previous_match = new_match
+
+        self.db_session.commit()
+
+        # Delete old matches:
+        deletions = 0
+        for match in self.db_session.query(model.Match).\
+                filter(model.Match.player_id == complete_data['player'].id).\
+                order_by(model.Match.datetime.desc()).\
+                offset(self.cache_matches).all():
+            self.db_session.delete(match)
+            deletions += 1
+        if deletions > 0:
+            self.db_session.commit()
+            logger.info('{}: {} matches deleted!'.format(
+                complete_data['player'].id, deletions))
+
+    def update_ema_mmr(self, player: model.Player):
+        matches = self.db_session.query(model.Match).\
+            filter(model.Match.player == player).\
+            order_by(model.Match.datetime.asc()).all()
+
+        previous_match = None
+        for match in matches:
+            alpha = 2.0 / (100.0 + 1.0)
+            if previous_match and previous_match.ema_mmr > 0.0:
+                delta = match.mmr - previous_match.ema_mmr
+                ema_mmr = previous_match.ema_mmr + alpha * delta
+                emvar_mmr = (1.0 - alpha) * \
+                    (previous_match.emvar_mmr + alpha * delta * delta)
+            else:
+                ema_mmr = match.mmr
+                emvar_mmr = 0.0
+
+            match.ema_mmr = ema_mmr
+            match.emvar_mmr = emvar_mmr
+            previous_match = match
+        self.db_session.commit()
+
+    def count_missing_games(self, player: model.Player, data):
+        missing = {}
+        missing['Win'] = data['wins']
+        missing['Loss'] = data['losses']
+
+        if (player.ladder_id != data['ladder_id'] or
+                not player.ladder_joined or
+                player.ladder_joined < data['joined'] or
+                data['wins'] < player.wins or
+                data['losses'] < player.losses):
+            logger.info('{}: New ladder {}!'.format(
+                player.id, data['ladder_id']))
+            new = True
+        else:
+            missing['Win'] -= player.wins
+            missing['Loss'] -= player.losses
+            new = player.mmr == 0
+
+        missing['Total'] = missing['Win'] + missing['Loss']
+
+        if (missing['Total']) > 0:
+            logger.info(
+                '{player}: {Total} new matches found!'.format(
+                    player=player.id, **missing))
+
+        return missing, new
+
+    async def get_player_with_race(self, player, ladder_data):
+        if player.ladder_id == 0:
+            player.race = ladder_data['race']
+            correct_player = player
+        elif player.race != ladder_data['race']:
+            correct_player = self.db_session.query(model.Player).filter(
+                model.Player.player_id == player.player_id,
+                model.Player.realm == player.realm,
+                model.Player.server == player.server,
+                model.Player.race == ladder_data['race']).scalar()
+            if not correct_player:
+                correct_player = model.Player(
+                    player_id=player.player_id,
+                    realm=player.realm,
+                    server=player.server,
+                    race=ladder_data['race'],
+                    ladder_id=0)
+                self.db_session.add(correct_player)
+                self.db_session.commit()
+                self.db_session.refresh(correct_player)
+        else:
+            correct_player = player
+
+        return correct_player
+
+    async def run(self):
+        start_time = time.time()
+        logger.info("Starting job...")
+        unique_group = (model.Player.player_id,
+                        model.Player.realm, model.Player.server)
+        tasks = []
+        for player in self.db_session.query(
+                model.Player).distinct(
+                *unique_group).group_by(*unique_group).all():
+            tasks.append(asyncio.create_task(self.query_player(player)))
+
+        for result in await asyncio.gather(*tasks, return_exceptions=True):
+            try:
+                if result is not None:
+                    raise result
+            except Exception as e:
+                logger.exception(
+                    ('The following exception was'
+                     ' raised while quering player {}:').format(player.id))
+
+        if False:
+            for player in self.db_session.query(
+                    model.Player).all():
+                self.update_ema_mmr(player)
+
+        logger.info(("Finished job performing {} api requests" +
+                     " ({} retries) in {:.2f} seconds.").format(
+            self.sc2api.request_count,
+            self.sc2api.retry_count,
+            time.time() - start_time))
