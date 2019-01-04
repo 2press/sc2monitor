@@ -143,6 +143,72 @@ class Server(enum.Enum):
         return self.describe()
 
 
+class League(enum.Enum):
+    Unranked = -1
+    Bronze = 0
+    Silver = 1
+    Gold = 2
+    Platinum = 3
+    Diamond = 4
+    Master = 5
+    Grandmaster = 6
+
+    def __ge__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value >= other.value
+        return NotImplemented
+
+    def __gt__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value > other.value
+        return NotImplemented
+
+    def __le__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value <= other.value
+        return NotImplemented
+
+    def __lt__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value < other.value
+        return NotImplemented
+
+    @classmethod
+    def get(cls, str):
+        if not str:
+            return cls.Unranked
+        for league in cls.__members__:
+            if league[0:1].lower() == str[0:1].lower():
+                return cls[league]
+        raise ValueError('Unknown league {}.'.format(str))
+
+    def describe(self):
+        if self.value == -1:
+            desc = "Unranked"
+        elif self.value == 1:
+            desc = "Bronze"
+        elif self.value == 2:
+            desc = "Silver"
+        elif self.value == 3:
+            desc = "Gold"
+        elif self.value == 4:
+            desc = "Platinum"
+        elif self.value == 5:
+            desc = "Diamond"
+        elif self.value == 6:
+            desc = "Master"
+        elif self.value == 7:
+            desc = "Grandmaster"
+
+        return desc
+
+    def id(self):
+        return self.value
+
+    def __str__(self):
+        return self.describe()
+
+
 def same_as(column_name):
     def default_function(context):
         return context.current_parameters.get(column_name)
@@ -161,6 +227,25 @@ class Config(Base):
                              self.value)
 
 
+class Season(Base):
+    __tablename__ = "season"
+    id = Column(Integer, primary_key=True)
+    season_id = Column(Integer)
+    server = Column(Enum(Server), default=Server.Europe)
+    year = Column(Integer)
+    number = Column(Integer)
+    start = Column(DateTime)
+    end = Column(DateTime)
+
+    def __repr__(self):
+        output = ('<Season(id={}, season_id={}, server={},'
+                  ' year={}, number={}, start={}, end={})>')
+        return output.format(self.id, self.season_id,
+                             self.server, self.year,
+                             self.number,
+                             self.start, self.end)
+
+
 class Player(Base):
     __tablename__ = "player"
     __table_args__ = tuple(UniqueConstraint(
@@ -172,12 +257,14 @@ class Player(Base):
     name = Column(String(64), default='')
     race = Column(Enum(Race), default=Race.Random)
     ladder_id = Column(Integer, default=0)
+    league = Column(Enum(League), default=League.Unranked)
     mmr = Column(Integer, default=0)
     wins = Column(Integer, default=0)
     losses = Column(Integer, default=0)
     refreshed = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     last_played = Column(DateTime)
     ladder_joined = Column(DateTime)
+    last_active_season = Column(Integer, default=0)
     matches = relationship("Match",
                            back_populates="player",
                            order_by="desc(Match.datetime)",

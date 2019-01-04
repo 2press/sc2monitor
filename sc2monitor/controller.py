@@ -20,6 +20,7 @@ class Controller:
         self.kwargs = kwargs
         self.sc2api = None
         self.db_session = None
+        self.current_season = {}
 
     async def __aenter__(self):
         self.http_session = aiohttp.ClientSession()
@@ -119,6 +120,46 @@ class Controller:
             self.db_session.close()
             self.db_session = None
 
+    async def update_season(self, server: model.Server):
+        current_season = await self.sc2api.get_season(server)
+        season = self.db_session.query(model.Season).\
+            filter(model.Season.server == server).\
+            order_by(model.Season.season_id.desc()).\
+            limit(1).scalar()
+
+        if not season or current_season.season_id != season.season_id:
+            self.db_session.add(current_season)
+            self.db_session.commit()
+            self.db_session.refresh(current_season)
+            return current_season
+        else:
+            season.start = current_season.start
+            season.end = current_season.end
+            season.year = current_season.year
+            season.number = current_season.number
+            self.db_session.commit()
+            return season
+
+    async def update_seasons(self):
+        servers = [server[0] for server in self.db_session.query(
+            model.Player.server).distinct()]
+
+        tasks = []
+
+        for server in servers:
+            tasks.append(asyncio.create_task(self.update_season(server)))
+
+        for season in await asyncio.gather(*tasks, return_exceptions=True):
+            try:
+                if isinstance(season, model.Season):
+                    self.current_season[season.server.id()] = season
+                else:
+                    raise season
+            except Exception as e:
+                logger.exception(
+                    ('The following exception was'
+                     ' raised while updating seasons:'))
+
     async def query_player(self, player: model.Player):
         complete_data = []
         for ladder in await self.sc2api.get_ladders(player):
@@ -210,25 +251,26 @@ class Controller:
             await self.update_player(race_player)
             self.calc_statistics(race_player['player'])
 
-    async def update_player(self, player: model.Player):
-        player['player'].mmr\
-            = player['new_data']['mmr']
-        player['player'].ladder_id\
-            = player['new_data']['ladder_id']
-        player['player'].ladder_joined\
-            = player['new_data']['joined']
-        player['player'].wins\
-            = player['new_data']['wins']
-        player['player'].losses\
-            = player['new_data']['losses']
-        if player['player'].name != player['new_data']['name']:
+    async def update_player(self, complete_data):
+        player = complete_data[player]
+        new_data = complete_data['new_data']
+        player.mmr = new_data['mmr']
+        player.ladder_id = new_data['ladder_id']
+        player.league = new_data['league']
+        player.ladder_joined = new_data['joined']
+        player.wins = new_data['wins']
+        player.losses = new_data['losses']
+        player.last_active_season \
+            = self.current_season[player.server.id()].season_id
+        self.current_season
+        if player.name != new_data['name']:
             await self.update_player_name(
-                player['player'],
-                player['new_data']['name'])
-        if (not player['player'].last_played or
-                player['player'].ladder_joined >
-                player['player'].last_played):
-            player['player'].last_played = player['player'].ladder_joined
+                player,
+                new_data['name'])
+        if (not player.last_played or
+                player.ladder_joined >
+                player.last_played):
+            player.last_played = player.ladder_joined
         self.db_session.commit()
 
     def calc_statistics(self, player: model.Player):
@@ -548,9 +590,13 @@ class Controller:
     async def run(self):
         start_time = time.time()
         logger.info("Starting job...")
+
+        await self.update_seasons()
+
         unique_group = (model.Player.player_id,
                         model.Player.realm, model.Player.server)
         tasks = []
+
         for player in self.db_session.query(
                 model.Player).distinct(
                 *unique_group).group_by(*unique_group).all():

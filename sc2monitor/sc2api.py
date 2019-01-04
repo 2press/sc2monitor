@@ -99,6 +99,25 @@ class SC2API:
                 raise ValueError('Invalid profile url {}'.format(url))
         return server, realmID, profileID
 
+    async def get_season(self, server: model.Server):
+        api_url = ('https://eu.api.blizzard.com/sc2/'
+                   'ladder/season/{}')
+        api_url = api_url.format(server.id())
+        payload = {'locale': 'en_US',
+                   'access_token': await self.get_access_token()}
+        data, status = await self._perform_api_request(api_url, params=payload)
+        if status != 200:
+            raise InvalidApiResponse(status)
+
+        return model.Season(
+            season_id=data.get('seasonId'),
+            number=data.get('number'),
+            year=data.get('year'),
+            server=server,
+            start=datetime.fromtimestamp(int(data.get('startDate'))),
+            end=datetime.fromtimestamp(int(data.get('endDate')))
+        )
+
     async def get_metadata(self, player: model.Player):
         return await self._get_metadata(
             player.server, player.realm, player.player_id)
@@ -156,6 +175,7 @@ class SC2API:
         if status != 200:
             raise InvalidApiResponse(status)
 
+        league = model.League.get(data.get('league'))
         found_idx = -1
         found = 0
         used = []
@@ -206,7 +226,8 @@ class SC2API:
                 'losses': int(team.get('losses')),
                 'name': player.get('displayName'),
                 'joined': datetime.fromtimestamp(team.get('joinTimestamp')),
-                'ladder_id': int(ladderID)}
+                'ladder_id': int(ladderID),
+                'league': league}
 
     async def _get_match_history(self, server: model.Server,
                                  realmID, profileID, scope='1v1'):
