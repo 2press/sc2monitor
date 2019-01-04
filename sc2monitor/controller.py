@@ -364,14 +364,17 @@ class Controller:
         # close to the last game of the match history and in alternating
         # order.
         player = complete_data['player']
-        missing_games = complete_data['missing']
+        if 'games' not in complete_data:
+            complete_data['games'] = []
+
         logger.info((
             "{}: {} missing games in match " +
             "history - more guessing!").format(
-            player.id, missing_games['Total']))
+            player.id, complete_data['missing']['Total']))
 
         try:
-            delta = (last_played - player.last_played) / missing_games
+            delta = (last_played - player.last_played) / \
+                complete_data['missing']['Total']
         except Exception:
             delta = timedelta(minutes=3)
 
@@ -379,42 +382,47 @@ class Controller:
             delta = timedelta(minutes=3)
 
         if delta.total_seconds() < 0:
-            logger.warning(
-                ('{}: Timedelta less than'
-                 ' zero ({}) - stop guessing!').format(player.id, delta))
-            return
+            last_played = datetime.now()
+            delta = timedelta(minutes=3)
 
-        while (missing_games['Win'] > 0 or missing_games['Loss'] > 0):
+        while (complete_data['missing']['Win'] > 0 or
+               complete_data['missing']['Loss'] > 0):
 
-            if missing_games['Win'] > 0:
+            if complete_data['missing']['Win'] > 0:
                 last_played = last_played - delta
                 complete_data['games'].append(
                     {'datetime': last_played, 'result': model.Result.Win})
-                missing_games['Win'] -= 1
+                complete_data['missing']['Win'] -= 1
+                complete_data['Win'] += 1
 
-            if (missing_games['Win'] > 0 and
-                    missing_games['Win'] > missing_games['Loss']):
+            if (complete_data['missing']['Win'] > 0 and
+                    complete_data['missing']['Win'] >
+                    complete_data['missing']['Loss']):
                 # If there are more wins than losses add
                 # a second win before the next loss.
                 last_played = last_played - delta
                 complete_data['games'].append(
                     {'datetime': last_played, 'result': model.Result.Win})
-                missing_games['Win'] -= 1
+                complete_data['missing']['Win'] -= 1
+                complete_data['Win'] += 1
 
-            if missing_games['Loss'] > 0:
+            if complete_data['missing']['Loss'] > 0:
                 last_played = last_played - delta
                 complete_data['games'].append(
                     {'datetime': last_played, 'result': model.Result.Loss})
-                missing_games['Loss'] -= 1
+                complete_data['missing']['Loss'] -= 1
+                complete_data['Loss'] += 1
 
-            if (missing_games['Loss'] > 0 and
-                    missing_games['Win'] < missing_games['Loss']):
+            if (complete_data['missing']['Loss'] > 0 and
+                    complete_data['missing']['Win'] <
+                    complete_data['missing']['Loss']):
                 # If there are more losses than wins add second loss before
                 # the next win.
                 last_played = last_played - delta
                 complete_data['games'].append(
                     {'datetime': last_played, 'result': model.Result.Loss})
-                missing_games['Loss'] -= 1
+                complete_data['missing']['Loss'] -= 1
+                complete_data['Loss'] += 1
 
     def guess_mmr_changes(self, complete_data):
         MMR = complete_data['player'].mmr
