@@ -260,8 +260,7 @@ class Controller:
         player.ladder_joined = new_data['joined']
         player.wins = new_data['wins']
         player.losses = new_data['losses']
-        player.last_active_season \
-            = self.current_season[player.server.id()].season_id
+        player.last_active_season = self.get_season_id(player.server)
         self.current_season
         if player.name != new_data['name']:
             await self.update_player_name(
@@ -535,19 +534,37 @@ class Controller:
             previous_match = match
         self.db_session.commit()
 
+    def get_season_id(self, server: model.Server):
+        return self.current_season[server.id()].season_id
+
     def count_missing_games(self, player: model.Player, data):
         missing = {}
         missing['Win'] = data['wins']
         missing['Loss'] = data['losses']
 
-        if (player.ladder_id != data['ladder_id'] or
+        if (player.last_active_season < self.get_season_id(player.server)):
+            # New Season!
+            # TODO: Check if last season endpoint can be requested!
+            new = False
+        elif (player.ladder_id != data['ladder_id'] or
                 not player.ladder_joined or
                 player.ladder_joined < data['joined'] or
                 data['wins'] < player.wins or
                 data['losses'] < player.losses):
-            logger.info('{}: New ladder {}!'.format(
-                player.id, data['ladder_id']))
-            new = True
+            # Old season, but new ladder or same ladder, but rejoined
+            if (data['wins'] < player.wins or
+                    data['losses'] < player.losses):
+                # Forced ladder reset!
+                logger.info('{}: Manual ladder reset to {}!'.format(
+                    player.id, data['ladder_id']))
+                new = True
+            else:
+                # Promotion?!
+                logger.info('{}: Promotion(?) to ladder {}!'.format(
+                    player.id, data['ladder_id']))
+                missing['Win'] -= player.wins
+                missing['Loss'] -= player.losses
+                new = player.mmr == 0
         else:
             missing['Win'] -= player.wins
             missing['Loss'] -= player.losses
