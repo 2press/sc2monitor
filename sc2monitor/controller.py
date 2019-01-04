@@ -252,7 +252,7 @@ class Controller:
             self.calc_statistics(race_player['player'])
 
     async def update_player(self, complete_data):
-        player = complete_data[player]
+        player = complete_data['player']
         new_data = complete_data['new_data']
         player.mmr = new_data['mmr']
         player.ladder_id = new_data['ladder_id']
@@ -385,7 +385,6 @@ class Controller:
 
             if missing_games['Win'] > 0:
                 last_played = last_played - delta
-                complete_data['']
                 complete_data['games'].append(
                     {'datetime': last_played, 'result': model.Result.Win})
                 missing_games['Win'] -= 1
