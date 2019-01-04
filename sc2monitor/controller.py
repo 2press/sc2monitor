@@ -378,8 +378,11 @@ class Controller:
         if delta > timedelta(minutes=3):
             delta = timedelta(minutes=3)
 
-        if delta < timedelta(minutes=0):
-            logger.warning('Timedelta less then zero: {}!'.format(delta))
+        if delta.total_seconds() < 0:
+            logger.warning(
+                ('{}: Timedelta less than'
+                 ' zero ({}) - stop guessing!').format(player.id, delta))
+            return
 
         while (missing_games['Win'] > 0 or missing_games['Loss'] > 0):
 
