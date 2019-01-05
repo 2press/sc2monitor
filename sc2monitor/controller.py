@@ -438,10 +438,11 @@ class Controller:
             # No games to guess
             return
 
-        # Estimate MMR change to be +/-20 for a win and losse, each adjusted
+        # Estimate MMR change to be +/-21 for a win and losse, each adjusted
         # by the average deviation to achive the most recent MMR value.
-        # Is 20 accurate?
-        MMRchange = 20
+        # Is 21 accurate? Yes, as the empirical avrage MMR change is 20.9016
+        # according to data gathered by this tool.
+        MMRchange = 21
 
         if MMR == 0:
             totalMMRchange = MMRchange * (wins - losses)
