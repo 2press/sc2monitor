@@ -43,7 +43,7 @@ class Controller:
         self.sc2api = SC2API(self)
         self.cache_matches = self.get_config(
             'cache_matches',
-            default_value=500)
+            default_value=1000)
         self.analyze_matches = self.get_config(
             'analyze_matches',
             default_value=100)
