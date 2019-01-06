@@ -36,7 +36,7 @@ class SC2API:
             re.IGNORECASE)
         self._p2 = re.compile(
             r'^https?:\/\/(eu|us).battle.net\/sc2\/\w+\/'
-            r'profile/(\d+)\/([1-2])\/\w+\/?',
+            r'/(?:\w+/)profile/(\d+)\/([1-2])\/\w+\/?',
             re.IGNORECASE)
 
     def read_config(self):
