@@ -443,7 +443,10 @@ class Controller:
         # by the average deviation to achive the most recent MMR value.
         # Is 21 accurate? Yes, as the empirical avrage MMR change is 20.9016
         # according to data gathered by this tool.
-        MMRchange = 21
+        if wins + losses == 1 and MMR != 0:
+            MMRchange = abs(totalMMRchange)
+        else:
+            MMRchange = 21
 
         if MMR == 0:
             totalMMRchange = MMRchange * (wins - losses)
