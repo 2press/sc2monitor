@@ -187,7 +187,8 @@ class Controller:
         for tmp_player in self.db_session.query(model.Player).filter(
                 model.Player.player_id == player.player_id,
                 model.Player.realm == player.realm,
-                model.Player.server == player.server).all():
+                model.Player.server == player.server,
+                model.Player.name != name).all():
             logger.info("{}: Updating name to '{}'".format(
                 tmp_player.id, name))
             tmp_player.name = name
