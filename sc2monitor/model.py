@@ -345,7 +345,7 @@ class Log(Base):
 
     def __repr__(self):
         return "<Log: {} - {}>".format(
-            self.datetime.strftime('%m/%d/%Y-%H:%M:%S'), self.msg[:25])
+            self.datetime.strftime('%m/%d/%Y-%H:%M:%S'), self.msg[:50])
 
 
 def create_db_session(db='', encoding=''):

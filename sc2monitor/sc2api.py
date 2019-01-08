@@ -257,7 +257,7 @@ class SC2API:
                     continue
                 try:
                     resp.raise_for_status()
-                except aiohttp.ClientResponseError:
+                except aiohttp.client_exceptions.ClientResponseError:
                     error = f'{resp.status}: {resp.reason}'
                     continue
                 try:
