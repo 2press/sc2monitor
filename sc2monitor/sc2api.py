@@ -101,8 +101,7 @@ class SC2API:
 
     async def get_season(self, server: model.Server):
         api_url = ('https://eu.api.blizzard.com/sc2/'
-                   'ladder/season/{}')
-        api_url = api_url.format(server.id())
+                   f'ladder/season/{server.id()}')
         payload = {'locale': 'en_US',
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)
@@ -138,8 +137,7 @@ class SC2API:
     async def _get_ladders(self, server: model.Server,
                            realmID, profileID, scope='1v1'):
         api_url = ('https://eu.api.blizzard.com/sc2/'
-                   'profile/{}/{}/{}/ladder/summary')
-        api_url = api_url.format(server.id(), realmID, profileID)
+                   f'profile/{server.id()}/{realmID}/{profileID}/ladder/summary')
         payload = {'locale': 'en_US',
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)
@@ -156,8 +154,8 @@ class SC2API:
 
     async def _get_metadata(self, server: model.Server,
                             realmID, profileID):
-        api_url = 'https://eu.api.blizzard.com/sc2/metadata/profile/{}/{}/{}'
-        api_url = api_url.format(server.id(), realmID, profileID)
+        api_url = ('https://eu.api.blizzard.com/sc2/'
+                   f'metadata/profile/{server.id()}/{realmID}/{profileID}')
         payload = {'locale': 'en_US',
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)
@@ -167,8 +165,8 @@ class SC2API:
 
     async def _get_ladder_data(self, server: model.Server,
                                realmID, profileID, ladderID):
-        api_url = 'https://eu.api.blizzard.com/sc2/profile/{}/{}/{}/ladder/{}'
-        api_url = api_url.format(server.id(), realmID, profileID, ladderID)
+        api_url = ('https://eu.api.blizzard.com/sc2/profile/'
+                   f'{server.id()}/{realmID}/{profileID}/ladder/{ladderID}')
         payload = {'locale': 'en_US',
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)
@@ -207,13 +205,9 @@ class SC2API:
                     raise InvalidApiResponse(r.url)
 
             if mmr != team.get('mmr'):
-                logger.warning(
-                    '{}: MMR in ladder request'
-                    ' does not match {} vs {}.'.format(
-                        api_url,
-                        mmr,
-                        team.get('mmr')
-                    ))
+                logger.debug(
+                    f'{api_url}: MMR in ladder request'
+                    f" does not match {mmr} vs {team.get('mmr')}.")
                 mmr = team.get('mmr')
             race = player.get('favoriteRace')
             games = int(team.get('wins')) + int(team.get('losses'))
@@ -232,8 +226,7 @@ class SC2API:
     async def _get_match_history(self, server: model.Server,
                                  realmID, profileID, scope='1v1'):
         api_url = ('https://eu.api.blizzard.com/sc2'
-                   '/legacy/profile/{}/{}/{}/matches')
-        api_url = api_url.format(server.id(), realmID, profileID)
+                   f'/legacy/profile/{server.id()}/{realmID}/{profileID}/matches')
         payload = {'locale': 'en_US',
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)
@@ -262,7 +255,7 @@ class SC2API:
                 try:
                     json = await resp.json()
                 except ContentTypeError:
-                    error = 'Unable to decode JSON!'
+                    error = 'Unable to decode JSON'
                     self.retry_count += 1
                     continue
                 json['request_datetime'] = datetime.now()
