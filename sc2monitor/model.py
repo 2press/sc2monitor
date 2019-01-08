@@ -80,7 +80,7 @@ class Race(enum.Enum):
         for race in cls.__members__:
             if race[0].lower() == str[0].lower():
                 return cls[race]
-        raise ValueError('Unknown race {}.'.format(str))
+        raise ValueError(f'Unknown race {str}')
 
     def describe(self):
         if self.value == 1:
@@ -180,7 +180,7 @@ class League(enum.Enum):
         for league in cls.__members__:
             if league[0:1].lower() == str[0:1].lower():
                 return cls[league]
-        raise ValueError('Unknown league {}.'.format(str))
+        raise ValueError(f'Unknown league {str}')
 
     def describe(self):
         if self.value == -1:
@@ -222,9 +222,7 @@ class Config(Base):
     value = Column(String(128))
 
     def __repr__(self):
-        output = ('<Config(id={}, key={}, value={})>')
-        return output.format(self.id, self.key,
-                             self.value)
+        return f'<Config(id={self.id}, key={self.key}, value={self.value})>'
 
 
 class Season(Base):
@@ -238,12 +236,8 @@ class Season(Base):
     end = Column(DateTime)
 
     def __repr__(self):
-        output = ('<Season(id={}, season_id={}, server={},'
-                  ' year={}, number={}, start={}, end={})>')
-        return output.format(self.id, self.season_id,
-                             self.server, self.year,
-                             self.number,
-                             self.start, self.end)
+        return (f'<Season(id={self.id}, season_id={self.season_id}, server={self.server},'
+                f' year={self.year}, number={self.number}, start={self.start}, end={self.end})>')
 
 
 class Player(Base):
@@ -275,13 +269,10 @@ class Player(Base):
                               cascade="save-update, merge, delete")
 
     def __repr__(self):
-        output = ('<Player(id={}, player_id={}, server={}, realm={},'
-                  ' ladder={}, name={}, race={}, mmr={}, wins={}, losses={})>')
-        return output.format(self.id, self.player_id,
-                             self.server, self.realm,
-                             self.ladder_id, self.name,
-                             self.race, self.mmr,
-                             self.wins, self.losses)
+        return (f'<Player(id={self.id}, player_id={self.player_id}, server={self.server}, '
+                f'realm={self.realm}, ladder={self.ladder_id}, name={self.name}, '
+                f'race={self.race}, mmr={self.mmr}, wins={self.wins}, '
+                f'losses={self.losses})>')
 
 
 class Match(Base):
@@ -299,12 +290,9 @@ class Match(Base):
     emvar_mmr = Column(Float, default=0.0)
 
     def __repr__(self):
-        output = ('<Match(id={}, player={}, result={},'
-                  ' datetime={}, mmr={}, mmr_change={}, guess={})>')
-        return output.format(self.id, self.player,
-                             self.result, self.datetime,
-                             self.mmr, self.mmr_change,
-                             self.guess)
+        return (f'<Match(id={self.id}, player={self.player}, result={self.result}, '
+                f'datetime={self.datetime}, mmr={self.mmr}, mmr_change={self.mmmr_change}, '
+                f'guess={self.guess})>')
 
 
 class Statistics(Base):
@@ -330,9 +318,7 @@ class Statistics(Base):
     instant_left_games = Column(Integer, default=0)
 
     def __repr__(self):
-        output = ('<Statistics(id={}, player={})>')
-        return output.format(self.id, self.player,
-                             self.winrate)
+        return f'<Statistics(id={self.id}, player={self.player}, games={self.games})>'
 
 
 class Log(Base):
@@ -355,7 +341,7 @@ class Log(Base):
 
     def __repr__(self):
         return "<Log: {} - {}>".format(
-            self.datetime.strftime('%m/%d/%Y-%H:%M:%S'), self.msg[:50])
+            self.datetime.strftime('%m/%d/%Y-%H:%M:%S'), self.msg[:25])
 
 
 def create_db_session(db='', encoding=''):
