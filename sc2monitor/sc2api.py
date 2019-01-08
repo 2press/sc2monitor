@@ -203,7 +203,7 @@ class SC2API:
                         break
 
                 if not found:
-                    raise InvalidApiResponse(r.url)
+                    raise InvalidApiResponse(api_url)
 
             if mmr != team.get('mmr'):
                 logger.debug(
