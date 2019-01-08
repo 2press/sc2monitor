@@ -63,7 +63,7 @@ class Controller:
             model.Config).filter(model.Config.key == key).scalar()
         if not entry:
             if raise_key_error:
-                raise ValueError('Unknown config key "{}"'.format(key))
+                raise ValueError(f'Unknown config key "{key}"')
             else:
                 if return_object:
                     return None
@@ -91,8 +91,8 @@ class Controller:
         for key, value in kwargs.items():
             if key not in valid_keys:
                 raise ValueError(
-                    "Invalid configuration key '{}' (valid keys: {})".format(
-                        key, ', '.join(valid_keys)))
+                    f"Invalid configuration key '{key}'"
+                    f" (valid keys: {', '.join(valid_keys))})")
             self.set_config(key, value, commit=False)
         self.db_session.commit()
         if self.sc2api:
@@ -189,8 +189,7 @@ class Controller:
                 model.Player.realm == player.realm,
                 model.Player.server == player.server,
                 model.Player.name != name).all():
-            logger.info("{}: Updating name to '{}'".format(
-                tmp_player.id, name))
+            logger.info(f"{tmp_player.id}: Updating name to '{name}'")
             tmp_player.name = name
         self.db_session.commit()
 
@@ -241,11 +240,9 @@ class Controller:
             if race_player['missing']['Total'] > 0:
                 if new:
                     logger.info(
-                        ('{}: Ignoring {} games missing in'
-                         ' match history ({}) of new player.').format(
-                            race_player['player'].id,
-                            race_player['missing']['Total'],
-                            len(match_history)))
+                        f"{race_player['player'].id}: Ignoring "
+                        f"{race_player['missing']['Total']} games missing in"
+                        f' match history ({len(match_history)}) of new player.')
                 else:
                     self.guess_games(race_player, last_played)
             self.guess_mmr_changes(race_player)
@@ -459,8 +456,8 @@ class Controller:
             # Make sure that sign of MMR change is correct
             if abs(avgMMRadjustment) >= MMRchange and MMRchange <= 50:
                 MMRchange += 1
-                logger.info("{}: Adjusting avg. MMR change to {}".format(
-                    complete_data['player'].id, MMRchange))
+                logger.info(f"{complete_data['player'].id}:"
+                            f" Adjusting avg. MMR change to {MMRchange}")
             else:
                 break
 
@@ -524,8 +521,8 @@ class Controller:
             deletions += 1
         if deletions > 0:
             self.db_session.commit()
-            logger.info('{}: {} matches deleted!'.format(
-                complete_data['player'].id, deletions))
+            logger.info(f"{complete_data['player'].id}: "
+                        f"{deletions} matches deleted!")
 
     def update_ema_mmr(self, player: model.Player):
         matches = self.db_session.query(model.Match).\
@@ -575,8 +572,8 @@ class Controller:
                 new = True
             else:
                 # Promotion?!
-                logger.info('{}: Promotion(?) to ladder {}!'.format(
-                    player.id, data['ladder_id']))
+                logger.info(f"{player.id}: Promotion(?) "
+                            f"to ladder {data['ladder_id']}!")
                 missing['Win'] -= player.wins
                 missing['Loss'] -= player.losses
                 new = player.mmr == 0
@@ -621,7 +618,7 @@ class Controller:
 
     async def run(self):
         start_time = time.time()
-        logger.info("Starting job...")
+        logger.debug("Starting job...")
 
         await self.update_seasons()
 
@@ -640,16 +637,14 @@ class Controller:
                     raise result
             except Exception as e:
                 logger.exception(
-                    ('The following exception was'
-                     ' raised while quering player {}:').format(player.id))
+                     'The following exception was'
+                     f' raised while quering player {player.id}:')
 
         if False:
             for player in self.db_session.query(
                     model.Player).all():
                 self.update_ema_mmr(player)
 
-        logger.info(("Finished job performing {} api requests" +
-                     " ({} retries) in {:.2f} seconds.").format(
-            self.sc2api.request_count,
-            self.sc2api.retry_count,
-            time.time() - start_time))
+        logger.info(f"Finished job performing {self.sc2api.request_count}"
+                    f" api requests ({elf.sc2api.retry_count} retries)"
+                    f" in {time.time() - start_time:.2f} seconds.")
