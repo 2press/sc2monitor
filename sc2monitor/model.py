@@ -236,8 +236,9 @@ class Season(Base):
     end = Column(DateTime)
 
     def __repr__(self):
-        return (f'<Season(id={self.id}, season_id={self.season_id}, server={self.server},'
-                f' year={self.year}, number={self.number}, start={self.start}, end={self.end})>')
+        return (f'<Season(id={self.id}, season_id={self.season_id}, '
+                f'server={self.server}, year={self.year}, '
+                f'number={self.number}, start={self.start}, end={self.end})>')
 
 
 class Player(Base):
@@ -269,8 +270,9 @@ class Player(Base):
                               cascade="save-update, merge, delete")
 
     def __repr__(self):
-        return (f'<Player(id={self.id}, player_id={self.player_id}, server={self.server}, '
-                f'realm={self.realm}, ladder={self.ladder_id}, name={self.name}, '
+        return (f'<Player(id={self.id}, player_id={self.player_id}, '
+                f'server={self.server}, realm={self.realm}, '
+                f'ladder={self.ladder_id}, name={self.name}, '
                 f'race={self.race}, mmr={self.mmr}, wins={self.wins}, '
                 f'losses={self.losses})>')
 
@@ -290,8 +292,9 @@ class Match(Base):
     emvar_mmr = Column(Float, default=0.0)
 
     def __repr__(self):
-        return (f'<Match(id={self.id}, player={self.player}, result={self.result}, '
-                f'datetime={self.datetime}, mmr={self.mmr}, mmr_change={self.mmmr_change}, '
+        return (f'<Match(id={self.id}, player={self.player}, '
+                f'result={self.result}, datetime={self.datetime}, '
+                f'mmr={self.mmr}, mmr_change={self.mmmr_change}, '
                 f'guess={self.guess})>')
 
 
@@ -318,7 +321,8 @@ class Statistics(Base):
     instant_left_games = Column(Integer, default=0)
 
     def __repr__(self):
-        return f'<Statistics(id={self.id}, player={self.player}, games={self.games})>'
+        return (f'<Statistics(id={self.id}, player={self.player}, '
+                f'games={self.games})>')
 
 
 class Log(Base):

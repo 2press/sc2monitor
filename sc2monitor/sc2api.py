@@ -137,7 +137,8 @@ class SC2API:
     async def _get_ladders(self, server: model.Server,
                            realmID, profileID, scope='1v1'):
         api_url = ('https://eu.api.blizzard.com/sc2/'
-                   f'profile/{server.id()}/{realmID}/{profileID}/ladder/summary')
+                   f'profile/{server.id()}/{realmID}/{profileID}/'
+                   'ladder/summary')
         payload = {'locale': 'en_US',
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)
@@ -225,8 +226,8 @@ class SC2API:
 
     async def _get_match_history(self, server: model.Server,
                                  realmID, profileID, scope='1v1'):
-        api_url = ('https://eu.api.blizzard.com/sc2'
-                   f'/legacy/profile/{server.id()}/{realmID}/{profileID}/matches')
+        api_url = ('https://eu.api.blizzard.com/sc2/legacy/profile/'
+                   f'{server.id()}/{realmID}/{profileID}/matches')
         payload = {'locale': 'en_US',
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)

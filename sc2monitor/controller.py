@@ -92,7 +92,7 @@ class Controller:
             if key not in valid_keys:
                 raise ValueError(
                     f"Invalid configuration key '{key}'"
-                    f" (valid keys: {', '.join(valid_keys))})")
+                    f" (valid keys: {', '.join(valid_keys)})")
             self.set_config(key, value, commit=False)
         self.db_session.commit()
         if self.sc2api:
@@ -242,7 +242,8 @@ class Controller:
                     logger.info(
                         f"{race_player['player'].id}: Ignoring "
                         f"{race_player['missing']['Total']} games missing in"
-                        f' match history ({len(match_history)}) of new player.')
+                        f" match history ({len(match_history)}) "
+                        "of new player.")
                 else:
                     self.guess_games(race_player, last_played)
             self.guess_mmr_changes(race_player)
@@ -637,8 +638,8 @@ class Controller:
                     raise result
             except Exception as e:
                 logger.exception(
-                     'The following exception was'
-                     f' raised while quering player {player.id}:')
+                    'The following exception was'
+                    f' raised while quering player {player.id}:')
 
         if False:
             for player in self.db_session.query(
@@ -646,5 +647,5 @@ class Controller:
                 self.update_ema_mmr(player)
 
         logger.info(f"Finished job performing {self.sc2api.request_count}"
-                    f" api requests ({elf.sc2api.retry_count} retries)"
+                    f" api requests ({self.sc2api.retry_count} retries)"
                     f" in {time.time() - start_time:.2f} seconds.")
