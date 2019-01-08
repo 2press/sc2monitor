@@ -246,26 +246,32 @@ class SC2API:
 
     async def _perform_api_request(self, url, **kwargs):
         error = ''
-        for retries in range(10):
+        max_retries = 5
+        for retries in range(max_retries - 1):
             async with self._session.get(url, **kwargs) as resp:
                 self.request_count += 1
+                status = resp.status
                 if resp.status == 504:
                     error = 'API timeout'
                     self.retry_count += 1
                     continue
                 try:
+                    status = resp.status
+                    resp.raise_for_status()
+                except aiohttp.ClientResponseError:
+                    error = f'{resp.status}: {resp.reason}'
+                try:
                     json = await resp.json()
                 except ContentTypeError:
                     error = 'Unable to decode JSON'
                     self.retry_count += 1
+                    status = 0
                     continue
                 json['request_datetime'] = datetime.now()
-                status = resp.status
                 break
-        if retries == 9:
+        if retries == max_retries:
             if error:
                 logger.warning(error)
-            status = 0
             json = {}
         return json, status
 
