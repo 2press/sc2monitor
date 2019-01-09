@@ -5,7 +5,7 @@ from datetime import datetime
 
 import sc2monitor.model as model
 from aiohttp import BasicAuth
-from aiohttp.client_exceptions import ContentTypeError
+from aiohttp.client_exceptions import ClientResponseError, ContentTypeError
 
 logger = logging.getLogger(__name__)
 
@@ -257,7 +257,7 @@ class SC2API:
                     continue
                 try:
                     resp.raise_for_status()
-                except aiohttp.client_exceptions.ClientResponseError:
+                except ClientResponseError:
                     error = f'{resp.status}: {resp.reason}'
                     continue
                 try:
