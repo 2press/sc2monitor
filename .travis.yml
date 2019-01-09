@@ -7,6 +7,6 @@ install:
   - 'pip install -e .'
 env:
   global:
-    - secure: swOkhMc0SGZMPdTePOzn7la1w+mpiJ/lZLEcNumZcVbraKpzA/v4R1eN1tnXtS1sMFPxDH9MvNvBQhQRoJtvDrih3s5Xul50YeT3zUEHv8BIwcoCX4fFsTG0Jw0ey3/0myToaji82bpUoAeEdBzRJYb5L3BJOw8Klip3GDA4032Ts02hKimGYYqBZagwKaU7OM+PFMA3DfRViWyeMZeI1Xm155OqtGi2z7beXVR63l9avND5RmWczvazjp5wggJetKLY7gwSNotrLv/T0I2XlMln8fgezr0y7/Cs2MLsZ4owxRku733Kktf0I2Wq4a+XOzi56B+RSARqsYndo9yhW05u2B9LFtplS2pC+e9SzeFe4hVFt8Ll08Cwe3lDNblFJTa1J5yT852sF4Szqv8USoVPdtZFSLy7Trk4S52LBYL9l7jikwPCWlgL+ejlf4fjF9SKodg7BF1FBmseIJX2+9DKwThreHpJLbxFVMMy+4cmLoPpu/RNOA5ao6X57mGiySDkpjRHhm1c6IHi9lIgvoCoc3hAb0IrDqz+7ZtyUs/GZdRYvOU4/RdmKCrQbINCJlRq07TkIRbFZctd4G/NhAuJOJrdy2PqvWs5B6ziwmpqmt/vP7g6L2tBhBRCpFWQAyIBj9FhV/epawAKkxL9mTfQ/6K+B8Yln3lCbGHDeQE=
+    - CMDOPT=type2
 script:
   - 'pytest --cmdopt=$CMDOPT'
