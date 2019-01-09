@@ -3,19 +3,9 @@ sudo: required
 dist: xenial
 python:
 - 3.7
-- 3.8-dev
 install:
 - pip install -e .
-script:
-- pytest
-deploy:
-  provider: pypi
-  skip_existing: true
-  true:
-    tags: true
-  user: pressure
-  password:
-    secure: BkAeysOnO38oaRZR9cgrSLh5DphwcmkkCNjZyt9wf7/VOWt5sDotUrjyNVnDCeGQUjYGSuZrhsbj/GNa0haVXM4SV7Et/pwSShr+mZ0Y1aB9KSCvDkEETGJU2MnYX023RsdP5KnSg8V8loKJTJ8Achy5pABqdIf6c2O2C66sKkLqyAJV99RJ/s9m2W9PsCCjqxdyr9QcptkCU4+Dgv2z6yyso9r7z47W+3qd5oM2JWZSjMEe5+NDXr7kQQ/nZJ+4dSY67SN0gwFPcmqtTB0CAqpNpfBeY/I+ZswO1wtE4GLoIIMzQaSoWonqArHsosG+46rVA3zPkpTZlN0x058oUBJHVfxI6rTW3azhmYv3apOWJUcAl+4OWKZ9vgXFHBD3WAPI7YnklKPSRCBoi1s7Ny5JLH3Un7QnOchD2JIO//ZGtwrVQ/ymEmHqWBq+e0JgusPN6YFBhA9+g/3w1Id4s72YGCGs6XIWO1Adx351xnI31yNFXfqelTWIWillBCBozFdGf1whktYj45bW/iqTTwQPHQ0DxJeOhxP5A5HnjG9Q7UjkCVzG38TfahhoJOnfxkuIDudRaXoeEr9+pjBH/KJ8jH1yWdZtQKHQpGHWTM+XZqE/L8i9FWxEmQMs81PEA/2wcFO9Nh9BF4ASM+DRYS5JwaWqtNCp2VqCoM1FTcM=
 env:
-  global:
-    secure: g8gYUqGXQWmVVg7irApx7H0oTyLA5C+OGQXbXf3GDMhAiUqbY1VhbhoFZpk5+A/hsL7RLxWN1s9+/a/AbcIAyxaTbF/hNQlyQ8NF8hplTdwU//ESkWXZF3IatJZTQMzwKKGMYOJnh69OWn4SqOt9oEco5JkXIToL3XK+HgUE7M+h4JGziD2HpSg03POpptRTVE1umVAFt+go9hakdW6dWimrdOmwGwgJPpurmbioWwrS+/liCYmfVQ7BruFrQZpwAbR8x895v+xH06Sm7Xruo9w+e6DOl5yCezDo8nG9IlKhR/11c40UFxVW3XN9R5gLIGevGAEn8d36Lsn715kjNv1nO50+yfq62iHdYI+q4Trfl/ogJ30RYcTBYusSdeJqZ34izx0l18aupog/9/lsw3FrLzO50fkdEHXBCH23mh/Tvz3Dub7V16cebjlhLp9lxEczplI4KN6bBSFmq4jqF+tofxYzf4PHX/wILBN8PsiGD+pWXoLIC5Gu58lfGGPTdIaNklix3SjNtFFNReJNv/jk1SftoSIUEB01VA5DLFSo43rYDGYmDeOOgechY1hOZArNImjSMJQigcwo5gTIFw4PWnST656bW7pAkYKJTV1DOxJU7PRlSV2XbFqocP6inFtdHtKYeA1064JgMFdYK1I9cueVum6PhKS8Zp74pGY=
+- CMDOPT=type2
+script:
+- pytest --cmdopt=$CMDOPT
