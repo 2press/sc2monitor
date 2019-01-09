@@ -2,6 +2,7 @@ import sc2monitor
 
 
 def test_monitor(apikey, apisecret):
+
     assert apikey != ''
     assert apisecret != ''
 
@@ -9,8 +10,8 @@ def test_monitor(apikey, apisecret):
                     user='travis',
                     passwd='',
                     db='sc2monitor',
-                    apikey=apikey,
-                    apisecret=apisecret)
+                    api_key=apikey,
+                    api_secret=apisecret)
 
     sc2monitor.add_player('https://starcraft2.com/en-gb/profile/2/1/221986')
 
