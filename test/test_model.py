@@ -1,6 +1,5 @@
-import pytest
+from sc2monitor.model import League, Race, Result
 
-from sc2monitor.model import Result, Race, League
 
 def test_result_win():
     assert Result.get('win') == Result.Win
@@ -14,6 +13,7 @@ def test_result_win():
     assert Result.Win.change() == 1
     assert Result.Win.short() == 'W'
 
+
 def test_result_loss():
     assert Result.get('Loss') == Result.Loss
     assert Result.get('loss') == Result.Loss
@@ -26,6 +26,7 @@ def test_result_loss():
     assert Result.Loss.change() == -1
     assert Result.Loss.short() == 'L'
 
+
 def test_result_tie():
     assert Result.get('Tie') == Result.Tie
     assert Result.get('tie') == Result.Tie
@@ -36,6 +37,7 @@ def test_result_tie():
     assert Result.get(0) == Result.Tie
     assert Result.Tie.change() == 0
     assert Result.Tie.short() == 'D'
+
 
 def test_race():
     def assert_race(race: str, assert_race: Race):
@@ -53,6 +55,7 @@ def test_race():
     assert_race('terran', Race.Terran)
     assert_race('random', Race.Random)
     assert Race.get('') == Race.Random
+
 
 def test_league():
     def assert_league(league: str, assert_league: League):
@@ -80,10 +83,7 @@ def test_league():
     assert_league('diamond', League.Diamond)
     assert_league('master', League.Master)
     assert_league('grandmaster', League.Grandmaster)
-    
+
+
 def test_answer(cmdopt):
-    if cmdopt == "type1":
-        print("first")
-    elif cmdopt == "type2":
-        print("second")
-    assert 0  # to see what was printed
+    assert cmdopt == "type2"
