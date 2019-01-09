@@ -1,6 +1,6 @@
 language: python
-sudo: required
-dist: xenial
+cache: pip
+dist: xenial # currently needed for python >=3.7
 python:
   - '3.7'
   - '3.8-dev'
@@ -15,8 +15,10 @@ script:
 deploy:
   provider: pypi
   user: "pressure"
-  distributions: "sdist bdist_wheel"
   password: "$pypi"
   skip_existing: true
   on:
     tags: true
+    distributions: "sdist bdist_wheel"
+    branch: master
+    condition: $TRAVIS_PYTHON_VERSION=3.7
