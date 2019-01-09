@@ -17,14 +17,16 @@ class Result(enum.Enum):
 
     @classmethod
     def get(cls, value):
-        if isinstance(value, str):
+        if isinstance(value, Result):
+            return value
+        elif isinstance(value, str):
             for result in cls.__members__:
                 if result[0].lower() == value[0].lower():
                     return cls[result]
         elif isinstance(value, int):
-            if value == 1:
+            if value >= 1:
                 return cls.Win
-            elif value == -1:
+            elif value <= -1:
                 return cls.Loss
             elif value == 0:
                 return cls.Tie
@@ -74,13 +76,16 @@ class Race(enum.Enum):
     Zerg = 3
 
     @classmethod
-    def get(cls, str):
-        if not str:
-            return cls.Random
-        for race in cls.__members__:
-            if race[0].lower() == str[0].lower():
-                return cls[race]
-        raise ValueError(f'Unknown race {str}')
+    def get(cls, value):
+        if isinstance(value, Race):
+            return value
+        elif isinstance(value, str):
+            if not value:
+                return cls.Random
+            for race in cls.__members__:
+                if race[0].lower() == value[0].lower():
+                    return cls[race]
+        raise ValueError(f'Unknown race {value}')
 
     def describe(self):
         if self.value == 1:
@@ -174,13 +179,23 @@ class League(enum.Enum):
         return NotImplemented
 
     @classmethod
-    def get(cls, str):
-        if not str:
-            return cls.Unranked
-        for league in cls.__members__:
-            if league[0:1].lower() == str[0:1].lower():
-                return cls[league]
-        raise ValueError(f'Unknown league {str}')
+    def get(cls, value):
+        if isinstance(value, League):
+            return value
+        elif isinstance(value, str):
+            if not value:
+                return cls.Unranked
+            if value[0:2].lower() == 'gm':
+                return League.Grandmaster
+            for league in cls.__members__:
+                if league[0:2].lower() == value[0:2].lower():
+                    return cls[league]
+            for league in cls.__members__:
+                if league[0].lower() == value[0].lower():
+                    return cls[league]
+        elif isinstance(value, int):
+            return League(value)
+        raise ValueError(f'Unknown league {league}')
 
     def describe(self):
         if self.value == -1:
