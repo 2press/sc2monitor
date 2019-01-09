@@ -2,10 +2,11 @@ language: python
 sudo: required
 dist: xenial
 python:
-- 3.7
+  - '3.7'
 install:
-- pip install -e .
+  - 'pip install -e .'
 env:
-- secure: lTgIQXHcDzZxp9iD6Pm6JsuuX3Ek71/ODBJUlzHQnL0QobpIrw8FCb93GqmpYXXMiynM9LooAtqe8byFeCNbwsFEd/PZaxIjKSYDALOTwBr1PfZo4/ghPU81Cr6FxLJZJF3Rr02RWbnSRXeJBoSiA0e3ON3AGaTMfDWi4V8OYSfniujvQ7/YLb4HQJiTiIjt7ckLSAHAMGwbTXHJrR2h/XqsayrIPSauFgb6TY72+KMY9fFHjTbBAUIzj2eIGssEEPIRyD0gHMVIzLfJqSt1x4k+RHGWxVPE9uaKe8vavo9vye6TU//C1QeAiUeEhg0N0MHrTmO5r0UhKzJdi7ormbeUySiEQKpX+rZbs4KuPVZiLt8sqNoiFULrtooR2rHHxBgYE3Xj0AUVtwLwx/p0NvmJ9NI0YQamlZHwtTnoV3f3XDuPvBxCO4sjSyrdjSu/4xljrh8yGlmnv+RouNIOrY0Fc5T3m6ArdW89bvxt3zZUOa6mGP9osOFKekkL1RssrppuzzpAYIhERP/FodfRyJk2DGJxFQ0rEfg368ecgmLwC50fKMolL0wqDvYtfxOyA2KX+7otbhz/lQgTkX//Mf+3hYA2cbHNTmWseoN9BZEkJAcVXwqWb9+Ux1HnzisUk7NuHY8mtTZm5Az03xqKg4nxp1TuQO8JtXzw/m7T2X0=
+  global:
+    - secure: 'eVYxm1giNnSvE6EYWf2d/Cm3KoLu5UdLfy49JR2Ocu1S1cV+BdlI/RHJ6ig+OwGHD2xPVx63Sbib5V8cwjK9Xup6Sda0AdFhXEFPfvK3vvFoz8ZrR58Vba7kuMOfL+A1kg75X/5vTraICeyEb2OSBZsrueXTtAz9EPxfsycbEd92+f2sQMJPzX1s+z/7Tv9zy2ZRjhmJR6SqbMGbFHrRoeSMetNyeo79RPYTDmv8CqiYfhi/r9EC3KIxPIWcYYOGbUpWKnpBy1c+49hUFTJ8Yh7iD4IYVKUaCUkLyv91Lx7xl63RlDlUAvYQnOH0LDcAXv7DZaKQ20tTGw1sK6m7lyJdXXiLQF0cfO1yH8Oc8BF+ATa2L7VCQNUp+37AEao5bgOQfYiDuOYvxxikvbtE9V/TMWno1+baDJdoCxmTiPTF+l45yvlCnWwKJF4FumZJXrtaQ+C5z2Id5Yc2zjj1rxfxS4p9zjg8PQHtlTRt5vYf5gbG9mRcuslxUHGcoH8L2OfRuR8CIVjc3uLZR3TOlipbS4hJC2tFJh3yvwUivJmvt6vaBhUkR4jgCN3KCdMLsKq+vDoWm8L8C0/OV7rv2ojFV+ClkgqUhko6fU+5/yGRZEYdbHpXd313npEhedFg8Ef001/qG/Fwi0oU+pBLwpmEe+DUtDKu7U5hF/4Q04c='
 script:
-- pytest --cmdopt=$CMDOPT
+  - 'pytest --cmdopt=$CMDOPT'
