@@ -17,7 +17,7 @@ setup(name='sc2monitor',
       author='pressure',
       author_email='pres.sure@ymail.com',
       license='MIT',
-      python_requires='>=3.7',
+      python_requires='>=3.7.1',
       tests_require=['pytest >= 4.1.0'],
       packages=['sc2monitor'],
       install_requires=[
