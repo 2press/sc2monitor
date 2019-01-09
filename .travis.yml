@@ -10,5 +10,5 @@ script:
 deploy:
   provider: pypi
   user: "pressure"
-  password:
-    secure: "ciUruLo8b9yOec8xK2r+pprudxECFtiH2VsacmXyhvb5q21opq966HFr6ZtkZGLk7Lrxovg+4SC5QfhLh4PYgj4odAKtjfhkXQyW3Xb7+0psJezWPeQ9ijlOi1GhiO8xqEbXCV4R307/ANJsPfK/2Xm304Ndi7zBg/lp0U3Vfm4Mny+ZdMuJoaDDZdC/sXlJr+tJqLBA/z+JUNZUBEOGasBrBjhNDeyOFW7laa2fTmxHWvmAWMQClIqvFbaDA8a5SLdEWGi1QTOa1ZXBr8cPKzgz82FRh+ggAXMD4bhPDXXBKeMr0KQP1Ni7nD38KF//9VXBw02Qq3AvnyBYhO9M1HwSPrQzHi5H2YgfIcjkI7roEeyhcWegfDXXg2xhbeYwi1WHCnVgT/U5SJTkiaUWOwKwiT3qRbvNVfJ3VND8u8uWQ7epZWnIYn5gtkTdK+R1rxew0qrqXVkUVMT46esXoNOyxSo9NfV0mPYY6GY1ZWcCg7a9G3PDjA1oJDZvG7T1mEd9DAFx3KAAkg6siGKBUd8sWRfgh52bSUqD6CQqO4fXj/1k0n39Mi7dmcS4SDKm8gkBp6fkDh9zQ/+WGsTJop5VHorgMyD/97enf8lS+ZOnj/3GE6tf+1zJ5nd4TTWLXLGl6TgsRQlui/Q/Kt5c/ipX0evHlGzUTFsethmbYSM="
+  distributions: "sdist bdist_wheel"
+  password: "$pypi"
