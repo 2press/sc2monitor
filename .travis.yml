@@ -2,18 +2,16 @@ language: python
 sudo: required
 dist: xenial
 python:
-  - "3.7"
-  - "3.8-dev"  # 3.5 development branch
-# command to install dependencies
+- 3.7
 install:
-  - pip install -e .
-# command to run tests
+- pip install -e .
 script:
-  - pytest
+- pytest
 deploy:
   provider: pypi
+  skip_existing: true
   on:
     tags: true
-  user: "pressure"
+  user: pressure
   password:
-    secure: bx9OF/UEgrU0z5PFquUTnweLHOMSwS6ZySRJu9um7xCX12pYKLsr6R+FIdIj4hwbJIGnS3SGBj70FYx0uelNRvNklk9hZL+iWjewplQDGPu4xmAfhm6eS30EDls6tPhnPaZU93aHhiNUao54zHnybyTYbRZpRH7bdf+MSRrmKJkpG528LFpDpuYxhj6zVmdOYtk7zebfZDCd14PHFVNRwxQi/KLdx9l8qYWW7SEVA3Hwyt2n/hLFUWMuRuuEzp1qddKq06+vubSw2ZiJctL9abzjZAnpGq5bSnFg6xI/Ybk2PlSD2YOPUfJNsTtqHUgvsq30XUf3Jgj3EMFtpjBKjRV4L1N8YICKqklYKrZyX+zKWGTwvYpfrMh1aYemayXXJwPCksdZscZQLV0H9+dFAYpYKtfIXOZB+WBNXLVJl9JjSWWu0CBP+OCe8LUMVRou7KJCQ28PiYpt6azKv8A7JntyiQpuUfJRr1LMTzHNWRUiXQjEh84kNMLmPpcPvVPJkGnfSiz3FtavZnzO5qDZdPVH3IoId9c64y3jjdU/HiVLP0qFhz9SSvnH1mmxbff21OrDHeMehpBG5Z5rhNa1eXSd/ZcX3NogF9PdwgsuMfJHeFGDAuH/gCaXl3VPUd0mo5KtQnY7WmDazgULrfLcsw267MtSGFllO23VM/JqAT0=
+    secure: BkAeysOnO38oaRZR9cgrSLh5DphwcmkkCNjZyt9wf7/VOWt5sDotUrjyNVnDCeGQUjYGSuZrhsbj/GNa0haVXM4SV7Et/pwSShr+mZ0Y1aB9KSCvDkEETGJU2MnYX023RsdP5KnSg8V8loKJTJ8Achy5pABqdIf6c2O2C66sKkLqyAJV99RJ/s9m2W9PsCCjqxdyr9QcptkCU4+Dgv2z6yyso9r7z47W+3qd5oM2JWZSjMEe5+NDXr7kQQ/nZJ+4dSY67SN0gwFPcmqtTB0CAqpNpfBeY/I+ZswO1wtE4GLoIIMzQaSoWonqArHsosG+46rVA3zPkpTZlN0x058oUBJHVfxI6rTW3azhmYv3apOWJUcAl+4OWKZ9vgXFHBD3WAPI7YnklKPSRCBoi1s7Ny5JLH3Un7QnOchD2JIO//ZGtwrVQ/ymEmHqWBq+e0JgusPN6YFBhA9+g/3w1Id4s72YGCGs6XIWO1Adx351xnI31yNFXfqelTWIWillBCBozFdGf1whktYj45bW/iqTTwQPHQ0DxJeOhxP5A5HnjG9Q7UjkCVzG38TfahhoJOnfxkuIDudRaXoeEr9+pjBH/KJ8jH1yWdZtQKHQpGHWTM+XZqE/L8i9FWxEmQMs81PEA/2wcFO9Nh9BF4ASM+DRYS5JwaWqtNCp2VqCoM1FTcM=
