@@ -4,6 +4,10 @@ dist: xenial
 python:
   - '3.7'
   - '3.8-dev'
+services:
+  - mysql
+before_install:
+  - mysql -e 'CREATE DATABASE sc2monitor;'
 install:
   - 'pip install -e .'
 script:
@@ -15,4 +19,4 @@ deploy:
   password: "$pypi"
   skip_existing: true
   on:
-    tag: true
+    tags: true

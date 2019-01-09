@@ -83,8 +83,3 @@ def test_league():
     assert_league('diamond', League.Diamond)
     assert_league('master', League.Master)
     assert_league('grandmaster', League.Grandmaster)
-
-
-def test_api(apikey, apisecret):
-    assert apikey != ''
-    assert apisecret != ''
