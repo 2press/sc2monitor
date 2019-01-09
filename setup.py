@@ -22,6 +22,7 @@ setup(name='sc2monitor',
       packages=['sc2monitor'],
       install_requires=[
           'PyMySQL',
-          'aiohttp'
+          'aiohttp',
+          'sqlalchemy'
       ],
       zip_safe=False)
