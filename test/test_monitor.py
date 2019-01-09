@@ -29,4 +29,4 @@ def test_monitor(apikey, apisecret):
     kwargs['api_key'] = apikey
     kwargs['api_secret'] = apisecret
 
-    asyncio.run(loop(**kwargs))
+    asyncio.run(monitor_loop(**kwargs))
