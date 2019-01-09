@@ -14,7 +14,7 @@ async def monitor_loop(**kwargs):
             Log.level == 'ERROR').count()
         assert errors == 0
         player = ctrl.db_session.query(Player).filter(
-            player.player_id == 221986).limit(1).scalar()
+            Player.player_id == 221986).limit(1).scalar()
         assert player is not None
         assert player.name != ''
 
