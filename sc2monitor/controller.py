@@ -471,7 +471,7 @@ class Controller:
 
         if not previous_match:
             logger.warning('{}: No previous match found.'.format(
-                complete_data['player'].player_id))
+                complete_data['player'].id))
 
         for idx, match in enumerate(complete_data['games']):
             estMMRchange = round(
@@ -554,8 +554,9 @@ class Controller:
         missing = {}
         missing['Win'] = data['wins']
         missing['Loss'] = data['losses']
-
-        if (player.last_active_season < self.get_season_id(player.server)):
+        if player.last_active_season == 0 or player.mmr == 0:
+            new = True
+        elif (player.last_active_season < self.get_season_id(player.server)):
             # New Season!
             # TODO: Check if last season endpoint can be requested!
             new = False
