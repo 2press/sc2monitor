@@ -11,7 +11,7 @@ async def monitor_loop(**kwargs):
         await ctrl.run()
         assert ctrl.sc2api.request_count > 0
         errors = ctrl.db_session.query(Log).filter(
-            model.Config.level != 'INFO').count()
+            Log.level != 'INFO').count()
         assert errors == 0
         player = ctrl.db_session.query(Player).filter(
             player.player_id == 221986).limit(1).scalar()
