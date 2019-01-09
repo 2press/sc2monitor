@@ -80,3 +80,10 @@ def test_league():
     assert_league('diamond', League.Diamond)
     assert_league('master', League.Master)
     assert_league('grandmaster', League.Grandmaster)
+    
+def test_answer(cmdopt):
+    if cmdopt == "type1":
+        print("first")
+    elif cmdopt == "type2":
+        print("second")
+    assert 0  # to see what was printed
