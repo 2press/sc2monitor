@@ -3,12 +3,16 @@ sudo: required
 dist: xenial
 python:
   - '3.7'
+  - '3.8-dev'
 install:
   - 'pip install -e .'
 script:
-  - 'pytest --cmdopt=$CMDOPT'
+  - 'pytest --apikey=$apikey --apisecret=$apisecret'
 deploy:
   provider: pypi
   user: "pressure"
   distributions: "sdist bdist_wheel"
   password: "$pypi"
+  skip_existing: true
+  on:
+    tag: true

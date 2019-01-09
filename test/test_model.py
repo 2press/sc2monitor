@@ -85,5 +85,6 @@ def test_league():
     assert_league('grandmaster', League.Grandmaster)
 
 
-def test_answer(cmdopt):
-    assert cmdopt == "type2"
+def test_api(apikey, apisecret):
+    assert apikey != ''
+    assert apisecret != ''
