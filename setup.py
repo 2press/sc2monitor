@@ -18,11 +18,11 @@ setup(name='sc2monitor',
       author_email='pres.sure@ymail.com',
       license='MIT',
       python_requires='>=3.7',
-      tests_require=['pytest'],
+      tests_require=['pytest >= 4.1.0'],
       packages=['sc2monitor'],
       install_requires=[
-          'PyMySQL',
-          'aiohttp',
-          'sqlalchemy'
+          'PyMySQL >= 0.9.3',
+          'aiohttp >= 3.5.2',
+          'sqlalchemy >= 1.2.15'
       ],
       zip_safe=False)
