@@ -10,3 +10,10 @@ install:
 # command to run tests
 script:
   - pytest
+deploy:
+  provider: pypi
+  user: "pressure"
+  password:
+    secure: "1SAlsJHErYPqv4pPd5Wg9jjfKKKEUq1KKk7ftJbsE0ILvE8qa8SYbFrV6dsXN1mOKIL4f/bpCbDRCIeILV05x3apOdDsg5/mcAZcLAo2B9ERpcwHDJYcGfWtDo/phYKeIHFiSA4vEwj9483PiFUjKQoSGbxPFNtWOdDPEyv5OxdIbx94DoSjK1oBaQYZb+pjoehHeeaEv4cldtSOWPPWkVFEEuDgBf4xTPb0UmFktb5KN6sao/LL3phCT2Ta4yFyKn1T7mA2VoUc0fqHeBmUBzH8fi7xnXkO+C9Tybd4vRmWjVzXQsLXZACjpPHW6qdJ85ne6RdKuonEkSjz6rC5Do/h7ZqvEnx4HyOm7BXuBkc++j3PO/b66AjtjLR+9HAFyIm7qOCB3DW64mb5RXiWX/gDvCT+d5uLi4lsa3fSMyF7aEn0TP3AeYQ24dzM/bovfB90i8eK1XSzlB0PJAyCtEM0FpkIqC+ds3ZdBgr8UZolzKILCdTzGPCgW9UJFDWsx9Gm+u/KGuYeT3DUUONgbzDLO8alQFTvrxMz+Qvbj370hDFU+7EVBK5+Yz2i0B/kDcSkMFYvuWmC8FhaClPOYLahQD9D4fIQzttE4d7plWfLsvVuUt7JKZNG4Nvdf7ThKJz3zl8RxSr+VtNPnC3+1eiesKyJV7ThBxCs9na0+Ds="
+  on:
+    tags: true
