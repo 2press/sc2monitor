@@ -6,7 +6,6 @@ python:
 install:
   - 'pip install -e .'
 env:
-  global:
-    - CMDOPT=type2
+  - CMDOPT=type2
 script:
   - 'pytest --cmdopt=$CMDOPT'
