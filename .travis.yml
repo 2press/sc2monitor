@@ -4,7 +4,7 @@ python:
   - "3.8-dev"  # 3.5 development branch
 # command to install dependencies
 install:
-  - pip install -e . --user
+  - pip install -e .
 # command to run tests
 script:
   - pytest
