@@ -19,13 +19,15 @@ async def monitor_loop(**kwargs):
         assert player.name != ''
 
 
-def test_monitor(apikey, apisecret):
+def test_monitor(apikey, apisecret, db, user, passwd):
 
     assert apikey != ''
     assert apisecret != ''
+    assert user != ''
+    assert db != ''
 
     kwargs = {}
-    kwargs['db'] = 'mysql+pymysql://travis:@127.0.0.1/sc2monitor'
+    kwargs['db'] = f'mysql+pymysql://{user}:{passwd}@{db}/sc2monitor'
     kwargs['api_key'] = apikey
     kwargs['api_secret'] = apisecret
 
