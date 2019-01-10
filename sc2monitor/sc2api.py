@@ -248,7 +248,7 @@ class SC2API:
         error = ''
         json = {}
         max_retries = 5
-        for retries in range(max_retries + 1):
+        for retries in range(max_retries):
             async with self._session.get(url, **kwargs) as resp:
                 self.request_count += 1
                 status = resp.status
@@ -271,7 +271,7 @@ class SC2API:
                 json['request_datetime'] = datetime.now()
                 break
                     
-        if retries == max_retries and error:
+        if retries == max_retries - 1 and error:
                 logger.warning(error)
 
         return json, status
