@@ -12,6 +12,7 @@ install:
   - 'pip install -e .'
 script:
   - 'pytest --apikey=$apikey --apisecret=$apisecret --db=127.0.0.1 --user=travis'
+  - 'pytest --apikey=$apikey --apisecret=$apisecret --protocol=sqlite'
 deploy:
   provider: pypi
   user: "pressure"
