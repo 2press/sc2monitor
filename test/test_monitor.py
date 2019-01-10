@@ -1,7 +1,7 @@
 import asyncio
 
 from sc2monitor.controller import Controller
-from sc2monitor.model import Log, Player
+from sc2monitor.model import Log, Player, Match
 
 
 async def monitor_loop(**kwargs):
@@ -12,11 +12,16 @@ async def monitor_loop(**kwargs):
         assert ctrl.sc2api.request_count > 0
         errors = ctrl.db_session.query(Log).filter(
             Log.level == 'ERROR').count()
+        warnings = ctrl.db_session.query(Log).filter(
+            Log.level == 'WARNING').count()
         assert errors == 0
+        assert warnings == 0
         player = ctrl.db_session.query(Player).filter(
             Player.player_id == 221986).limit(1).scalar()
         assert player is not None
         assert player.name != ''
+        matches = ctrl.db_session.query(Match).filter(Match.player == player).count()
+        assert matches <= 25
 
 
 def test_monitor(apikey, apisecret, db, user, passwd):
