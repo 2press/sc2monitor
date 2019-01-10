@@ -30,15 +30,21 @@ async def monitor_loop(**kwargs):
         assert matches <= 25
 
 
-def test_monitor(apikey, apisecret, db, user, passwd):
+def test_monitor(apikey, apisecret, db, user, passwd, protocol):
 
     assert apikey != ''
     assert apisecret != ''
-    assert user != ''
-    assert db != ''
+    assert protocol != ''
 
     kwargs = {}
-    kwargs['db'] = f'mysql+pymysql://{user}:{passwd}@{db}/sc2monitor'
+    
+    if protocol == 'sqlite':
+        kwargs['db'] = 'sqlite://'
+    else:
+        assert user != ''
+        assert db != ''
+        kwargs['db'] = f'{protocol}//{user}:{passwd}@{db}/sc2monitor'
+            
     kwargs['api_key'] = apikey
     kwargs['api_secret'] = apisecret
 
