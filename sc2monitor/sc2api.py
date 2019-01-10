@@ -270,9 +270,9 @@ class SC2API:
                     continue
                 json['request_datetime'] = datetime.now()
                 break
-                    
+
         if retries == max_retries - 1 and error:
-                logger.warning(error)
+            logger.warning(error)
 
         return json, status
 
