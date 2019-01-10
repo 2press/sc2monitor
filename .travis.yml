@@ -12,7 +12,7 @@ install:
   - 'pip install -e .'
 script:
   - 'pytest --apikey=$apikey --apisecret=$apisecret'
-  - 'pytest --apikey=$apikey --apisecret=$apisecret --protocol=mysql+pysql --db=127.0.0.1 --user=travis'
+  - 'pytest --apikey=$apikey --apisecret=$apisecret --protocol=mysql+pymysql --db=127.0.0.1 --user=travis'
 deploy:
   provider: pypi
   user: "pressure"
