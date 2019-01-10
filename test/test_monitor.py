@@ -43,7 +43,7 @@ def test_monitor(apikey, apisecret, db, user, passwd, protocol):
     else:
         assert user != ''
         assert db != ''
-        kwargs['db'] = f'{protocol}//{user}:{passwd}@{db}/sc2monitor'
+        kwargs['db'] = f'{protocol}://{user}:{passwd}@{db}/sc2monitor'
             
     kwargs['api_key'] = apikey
     kwargs['api_secret'] = apisecret
