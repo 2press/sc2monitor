@@ -12,10 +12,7 @@ async def monitor_loop(**kwargs):
         assert ctrl.sc2api.request_count > 0
         errors = ctrl.db_session.query(Log).filter(
             Log.level == 'ERROR').count()
-        warnings = ctrl.db_session.query(Log).filter(
-            Log.level == 'WARNING').count()
         assert errors == 0
-        assert warnings == 0
         player = ctrl.db_session.query(Player).filter(
             Player.player_id == 221986).limit(1).scalar()
         assert player is not None
