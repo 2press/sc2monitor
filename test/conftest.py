@@ -12,6 +12,8 @@ def pytest_addoption(parser):
                      default='sc2monitor', help="database user")
     parser.addoption("--passwd", action="store",
                      default='', help="database password")
+    parser.addoption("--protocol", action="store",
+                     default='mysql+pymsql', help="database protocol")
 
 
 @pytest.fixture
@@ -37,3 +39,8 @@ def user(request):
 @pytest.fixture
 def passwd(request):
     return request.config.getoption("--passwd")
+
+
+@pytest.fixture
+def protocol(request):
+    return request.config.getoption("--protocol")
