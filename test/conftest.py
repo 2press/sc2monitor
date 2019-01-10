@@ -13,7 +13,7 @@ def pytest_addoption(parser):
     parser.addoption("--passwd", action="store",
                      default='', help="database password")
     parser.addoption("--protocol", action="store",
-                     default='sqlite', help="database protocol (mysql+pymsql, sqlite, ...)")
+                     default='sqlite', help="database protocol (mysql+pymysql, sqlite, ...)")
 
 
 @pytest.fixture
