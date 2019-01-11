@@ -28,9 +28,13 @@ If not executed reguarly the script will try to make an educated guess for games
 
 At execution a protocol will automatically logged to the database.
 
-You can add players to monitor either by passing their StarCraft 2 URL:
+You can add and remove players to the monitor by passing their StarCraft 2 URL:
 ```python
+# Adding a player
 sc2monitor.add_player('https://starcraft2.com/en-gb/profile/2/1/221986')
+
+# Removing a player
+sc2monitor.remove_player('https://starcraft2.com/en-gb/profile/2/1/221986')
 ```
 
 ## Data
