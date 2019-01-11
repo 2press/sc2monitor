@@ -120,6 +120,22 @@ class Controller:
             self.db_session.close()
             self.db_session = None
 
+    def remove_player(self, url):
+        close_db = False
+        if self.db_session is None:
+            self.create_db_session()
+            close_db = True
+        server, realm, player_id = self.sc2api.parse_profile_url(url)
+        for player in self.db_session.query(model.Player).filter(
+                model.Player.realm == realm,
+                model.Player.player_id == player_id,
+                model.Player.server == server).all():
+            self.db_session.delete(player)
+         self.db_session.commit()
+        if close_db:
+            self.db_session.close()
+            self.db_session = None
+            
     async def update_season(self, server: model.Server):
         current_season = await self.sc2api.get_season(server)
         season = self.db_session.query(model.Season).\
