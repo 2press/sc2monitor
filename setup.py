@@ -25,4 +25,11 @@ setup(name='sc2monitor',
           'aiohttp >= 3.5.4',
           'sqlalchemy >= 1.2.16'
       ],
-      zip_safe=False)
+      zip_safe=False,
+      classifiers=[
+          'Development Status :: 3 - Alpha',
+          'Environment :: Console',
+          'License :: OSI Approved :: MIT License',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python :: 3.7',
+          'Programming Language :: Python :: 3.8'])
