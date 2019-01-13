@@ -1,7 +1,8 @@
 [![PyPi](https://img.shields.io/pypi/v/sc2monitor.svg)](https://pypi.org/project/sc2monitor/)
-[![License](https://img.shields.io/github/license/2press/sc2monitor.svg)](https://github.com/2press/sc2monitor/blob/master/LICENSE)
+![](https://img.shields.io/pypi/pyversions/sc2monitor.svg)
 [![Build Status](https://travis-ci.com/2press/sc2monitor.svg?branch=master)](https://travis-ci.com/2press/sc2monitor)
 [![Requirements Status](https://requires.io/github/2press/sc2monitor/requirements.svg?branch=master)](https://requires.io/github/2press/sc2monitor/requirements/?branch=master)
+[![License](https://img.shields.io/github/license/2press/sc2monitor.svg)](https://github.com/2press/sc2monitor/blob/master/LICENSE)
 
 # sc2monitor
 Python (>=3.7) script that when executed regularly keeps track of medium amount StarCraft 2 accounts on the 1vs1 ladder
