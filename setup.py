@@ -1,4 +1,4 @@
-# read the contents of README file
+"""Set up the sc2monitor via setuptools."""
 from os import path
 
 from setuptools import setup
