@@ -1,4 +1,5 @@
 [![](https://img.shields.io/pypi/v/sc2monitor.svg)](https://pypi.org/project/sc2monitor/)
+[![](https://img.shields.io/github/license/2press/sc2monitor.svg)](https://github.com/2press/sc2monitor/blob/master/LICENSE)
 [![Build Status](https://travis-ci.com/2press/sc2monitor.svg?branch=master)](https://travis-ci.com/2press/sc2monitor)
 [![Requirements Status](https://requires.io/github/2press/sc2monitor/requirements.svg?branch=master)](https://requires.io/github/2press/sc2monitor/requirements/?branch=master)
 
