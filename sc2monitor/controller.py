@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from operator import itemgetter
 
 import aiohttp
+
 import sc2monitor.model as model
 from sc2monitor.handlers import SQLAlchemyHandler
 from sc2monitor.sc2api import SC2API
@@ -155,7 +156,7 @@ class Controller:
                     self.current_season[season.server.id()] = season
                 else:
                     raise season
-            except Exception as e:
+            except Exception:
                 logger.exception(
                     ('The following exception was'
                      ' raised while updating seasons:'))
@@ -176,8 +177,8 @@ class Controller:
 
         if len(complete_data) > 0:
             await self.process_player(complete_data, new)
-        elif (not player.name or
-                player.refreshed <= datetime.now() - timedelta(days=1)):
+        elif (not player.name
+                or player.refreshed <= datetime.now() - timedelta(days=1)):
             await self.update_player_name(player)
 
     async def update_player_name(self, player: model.Player, name=''):
@@ -202,9 +203,9 @@ class Controller:
             for data_key, data in enumerate(complete_data):
                 needed = data['missing'][match['result'].describe()] > 0
                 try:
-                    datetime_check = (match['datetime'] -
-                                      data['player'].last_played >
-                                      timedelta(seconds=-30))
+                    datetime_check = (match['datetime']
+                                      - data['player'].last_played
+                                      > timedelta(seconds=-30))
                 except TypeError:
                     datetime_check = True
                 if (needed and datetime_check):
@@ -265,9 +266,9 @@ class Controller:
             await self.update_player_name(
                 player,
                 new_data['name'])
-        if (not player.last_played or
-                player.ladder_joined >
-                player.last_played):
+        if (not player.last_played
+                or player.ladder_joined
+                > player.last_played):
             player.last_played = player.ladder_joined
         self.db_session.commit()
 
@@ -344,9 +345,9 @@ class Controller:
             stats.lr_mmr_intercept = ybar - stats.lr_mmr_slope * xbar
 
         stats.sd_mmr = round(
-            math.sqrt(expected_mmr_value2 -
-                      expected_mmr_value *
-                      expected_mmr_value))
+            math.sqrt(expected_mmr_value2
+                      - expected_mmr_value
+                      * expected_mmr_value))
         # critical_idx = min(self.controller.config['no_critical_games'],
         #                   stats.games_available) - 1
         # stats.critical_game_played = matches[critical_idx]["played"]
@@ -367,8 +368,8 @@ class Controller:
             complete_data['games'] = []
 
         logger.info((
-            "{}: {} missing games in match " +
-            "history - more guessing!").format(
+            "{}: {} missing games in match "
+            + "history - more guessing!").format(
             player.id, complete_data['missing']['Total']))
 
         try:
@@ -384,8 +385,8 @@ class Controller:
             last_played = datetime.now()
             delta = timedelta(minutes=3)
 
-        while (complete_data['missing']['Win'] > 0 or
-               complete_data['missing']['Loss'] > 0):
+        while (complete_data['missing']['Win'] > 0
+               or complete_data['missing']['Loss'] > 0):
 
             if complete_data['missing']['Win'] > 0:
                 last_played = last_played - delta
@@ -394,9 +395,9 @@ class Controller:
                 complete_data['missing']['Win'] -= 1
                 complete_data['Win'] += 1
 
-            if (complete_data['missing']['Win'] > 0 and
-                    complete_data['missing']['Win'] >
-                    complete_data['missing']['Loss']):
+            if (complete_data['missing']['Win'] > 0
+                    and complete_data['missing']['Win']
+                    > complete_data['missing']['Loss']):
                 # If there are more wins than losses add
                 # a second win before the next loss.
                 last_played = last_played - delta
@@ -412,9 +413,9 @@ class Controller:
                 complete_data['missing']['Loss'] -= 1
                 complete_data['Loss'] += 1
 
-            if (complete_data['missing']['Loss'] > 0 and
-                    complete_data['missing']['Win'] <
-                    complete_data['missing']['Loss']):
+            if (complete_data['missing']['Loss'] > 0
+                    and complete_data['missing']['Win']
+                    < complete_data['missing']['Loss']):
                 # If there are more losses than wins add second loss before
                 # the next win.
                 last_played = last_played - delta
@@ -451,8 +452,8 @@ class Controller:
             MMR = complete_data['new_data']['mmr'] - totalMMRchange
 
         while True:
-            avgMMRadjustment = (totalMMRchange - MMRchange *
-                                (wins - losses)) / (wins + losses)
+            avgMMRadjustment = (totalMMRchange - MMRchange
+                                * (wins - losses)) / (wins + losses)
 
             # Make sure that sign of MMR change is correct
             if abs(avgMMRadjustment) >= MMRchange and MMRchange <= 50:
@@ -465,8 +466,8 @@ class Controller:
         last_played = complete_data['player'].last_played
 
         previous_match = self.db_session.query(model.Match).\
-            filter(model.Match.player_id ==
-                   complete_data['player'].id).\
+            filter(model.Match.player_id
+                   == complete_data['player'].id).\
             order_by(model.Match.datetime.desc()).limit(1).scalar()
 
         if not previous_match:
@@ -560,14 +561,14 @@ class Controller:
             # New Season!
             # TODO: Check if last season endpoint can be requested!
             new = False
-        elif (player.ladder_id != data['ladder_id'] or
-                not player.ladder_joined or
-                player.ladder_joined < data['joined'] or
-                data['wins'] < player.wins or
-                data['losses'] < player.losses):
+        elif (player.ladder_id != data['ladder_id']
+                or not player.ladder_joined
+                or player.ladder_joined < data['joined']
+                or data['wins'] < player.wins
+                or data['losses'] < player.losses):
             # Old season, but new ladder or same ladder, but rejoined
-            if (data['wins'] < player.wins or
-                    data['losses'] < player.losses):
+            if (data['wins'] < player.wins
+                    or data['losses'] < player.losses):
                 # Forced ladder reset!
                 logger.info('{}: Manual ladder reset to {}!'.format(
                     player.id, data['ladder_id']))
@@ -637,7 +638,7 @@ class Controller:
             try:
                 if result is not None:
                     raise result
-            except Exception as e:
+            except Exception:
                 logger.exception(
                     'The following exception was'
                     f' raised while quering player {player.id}:')

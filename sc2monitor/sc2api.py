@@ -3,9 +3,10 @@ import logging
 import re
 from datetime import datetime
 
-import sc2monitor.model as model
 from aiohttp import BasicAuth
 from aiohttp.client_exceptions import ClientResponseError, ContentTypeError
+
+import sc2monitor.model as model
 
 logger = logging.getLogger(__name__)
 
@@ -61,9 +62,10 @@ class SC2API:
 
     async def get_access_token(self):
         async with self._access_token_lock:
-            if (not self._access_token or
-                (not self._access_token_checked and
-                 not await self.check_access_token(self._access_token))):
+            if (not self._access_token
+                or (not self._access_token_checked
+                    and not await self.check_access_token(
+                        self._access_token))):
                 await self.receive_new_access_token()
 
         return self._access_token
@@ -194,9 +196,9 @@ class SC2API:
                         found_idx + 1, len(data.get('ladderTeams'))):
                     team = data.get('ladderTeams')[team_idx]
                     player = team.get('teamMembers')[0]
-                    if (team_idx not in used and
-                        int(player.get('id')) == profileID and
-                            int(player.get('realm')) == realmID):
+                    if (team_idx not in used
+                        and int(player.get('id')) == profileID
+                            and int(player.get('realm')) == realmID):
                         found_idx = team_idx
                         used.append(team_idx)
                         found = True
