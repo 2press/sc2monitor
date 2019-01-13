@@ -1,3 +1,4 @@
+"""Test the sc2monitor model."""
 from sc2monitor.model import League, Race, Result
 
 
