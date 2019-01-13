@@ -1,10 +1,10 @@
-[![](https://img.shields.io/pypi/v/sc2monitor.svg)](https://pypi.org/project/sc2monitor/)
-[![](https://img.shields.io/github/license/2press/sc2monitor.svg)](https://github.com/2press/sc2monitor/blob/master/LICENSE)
+[![PyPi](https://img.shields.io/pypi/v/sc2monitor.svg)](https://pypi.org/project/sc2monitor/)
+[![License](https://img.shields.io/github/license/2press/sc2monitor.svg)](https://github.com/2press/sc2monitor/blob/master/LICENSE)
 [![Build Status](https://travis-ci.com/2press/sc2monitor.svg?branch=master)](https://travis-ci.com/2press/sc2monitor)
 [![Requirements Status](https://requires.io/github/2press/sc2monitor/requirements.svg?branch=master)](https://requires.io/github/2press/sc2monitor/requirements/?branch=master)
 
 # sc2monitor
-Python (>=3.7.1) script that when executed regularly keeps track of medium amount StarCraft 2 accounts on the 1vs1 ladder
+Python (>=3.7) script that when executed regularly keeps track of medium amount StarCraft 2 accounts on the 1vs1 ladder
 
 ## Installation
 Install this Python 3 package via `pip` by executing `pip install sc2monitor`
@@ -25,7 +25,7 @@ sc2monitor.run()
 ```
 Your API-key `your-bnet-api-key` and secret `your-bnet-api-secret` have to be created by registering an application at https://develop.battle.net/access/ and have to be passed only once or when you want to change them. If not specified `mysql+pymysql` will be used as database protocol - other protocol options can be found at https://docs.sqlalchemy.org/en/latest/dialects/.
 
-If not executed reguarly the script will try to make an educated guess for games played since the last execution.
+If not executed regularly the script will try to make an educated guess for games played since the last execution.
 
 At execution a protocol will automatically logged to the database.
 
