@@ -1,3 +1,4 @@
+"""sc2monitor keeps keeps track of large amount StarCraft 2 accounts."""
 import asyncio
 
 from sc2monitor.controller import Controller
@@ -16,6 +17,7 @@ api_credentials = dict(
 
 def init(host='', user='', passwd='', db='', protocol='',
          api_key='', api_secret=''):
+    """Init the sc2monitor give database and api credentials."""
     if host:
         db_credentials['host'] = host
     if user:
@@ -33,6 +35,7 @@ def init(host='', user='', passwd='', db='', protocol='',
 
 
 def add_player(url):
+    """Add a player to the sc2monitor by Battl.net URL."""
     kwargs = {}
     kwargs['db'] = '{protocol}://{user}:{passwd}@{host}/{db}'.format(
         **db_credentials)
@@ -40,7 +43,17 @@ def add_player(url):
     controller.add_player(url=url)
 
 
+def remove_player(url):
+    """Remove a player off the sc2monitor by Battl.net URL."""
+    kwargs = {}
+    kwargs['db'] = '{protocol}://{user}:{passwd}@{host}/{db}'.format(
+        **db_credentials)
+    controller = Controller(**kwargs)
+    controller.remove_player(url=url)
+
+
 async def main_loop():
+    """Define the asyncio main loop of the sc2monitor."""
     kwargs = {}
     kwargs['db'] = '{protocol}://{user}:{passwd}@{host}/{db}'.format(
         **db_credentials)
@@ -54,4 +67,5 @@ async def main_loop():
 
 
 def run():
+    """Run the sc2monitor."""
     asyncio.run(main_loop())

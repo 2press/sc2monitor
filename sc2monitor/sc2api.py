@@ -1,3 +1,4 @@
+"""Wrapper for the SC2 api."""
 import asyncio
 import logging
 import re
@@ -12,8 +13,10 @@ logger = logging.getLogger(__name__)
 
 
 class SC2API:
+    """Wrapper for the SC2 api."""
 
     def __init__(self, controller):
+        """Init the sc2 api."""
         self._controller = controller
         try:
             self._session = self._controller.http_session
@@ -31,6 +34,7 @@ class SC2API:
         self._precompile()
 
     def _precompile(self):
+        """Precompile regular expression for bnet urls."""
         self._p1 = re.compile(
             r'^https?:\/\/starcraft2.com\/(?:\w+-\w+\/)?'
             r'profile\/([1-5])\/([1-2])\/(\d+)\/?',
@@ -41,6 +45,7 @@ class SC2API:
             re.IGNORECASE)
 
     def read_config(self):
+        """Read the api key and secret from the config."""
         self._key = self._controller.get_config(
             'api_key', raise_key_error=False)
         self._secret = self._controller.get_config(
@@ -53,6 +58,7 @@ class SC2API:
             self._access_token_checked = False
 
     async def check_access_token(self, token):
+        """Check if the access token is valid."""
         async with self._session.get(
                 'https://eu.battle.net/oauth/check_token',
                 params={'token': token}) as resp:
@@ -61,6 +67,7 @@ class SC2API:
         return self._access_token_checked
 
     async def get_access_token(self):
+        """Get an valid access token."""
         async with self._access_token_lock:
             if (not self._access_token
                 or (not self._access_token_checked
@@ -71,6 +78,7 @@ class SC2API:
         return self._access_token
 
     async def receive_new_access_token(self):
+        """Receive a new acces token vai oauth."""
         data, status = await self._perform_api_request(
             'https://eu.battle.net/oauth/token',
             auth=BasicAuth(
@@ -86,6 +94,7 @@ class SC2API:
         logger.info('New access token received.')
 
     def parse_profile_url(self, url):
+        """Parse a profile URL for the server, the realm and the profile ID."""
         m = self._p1.match(url)
         if m:
             server = model.Server(int(m.group(1)))
@@ -102,6 +111,7 @@ class SC2API:
         return server, realmID, profileID
 
     async def get_season(self, server: model.Server):
+        """Collect the current season info."""
         api_url = ('https://eu.api.blizzard.com/sc2/'
                    f'ladder/season/{server.id()}')
         payload = {'locale': 'en_US',
@@ -120,24 +130,29 @@ class SC2API:
         )
 
     async def get_metadata(self, player: model.Player):
+        """Collect meta data for a player."""
         return await self._get_metadata(
             player.server, player.realm, player.player_id)
 
     async def get_ladders(self, player: model.Player):
+        """Collect all 1v1 ladders where a player is ranked."""
         return await self._get_ladders(
             player.server, player.realm, player.player_id)
 
     async def get_ladder_data(self, player: model.Player, ladder_id):
+        """Collect data about a player's ladder."""
         async for data in self._get_ladder_data(
                 player.server, player.realm, player.player_id, ladder_id):
             yield data
 
     async def get_match_history(self, player: model.Player):
+        """Collect match history of a player."""
         return await self._get_match_history(
             player.server, player.realm, player.player_id)
 
     async def _get_ladders(self, server: model.Server,
                            realmID, profileID, scope='1v1'):
+        """Collect all ladder of a scope where a player is ranked."""
         api_url = ('https://eu.api.blizzard.com/sc2/'
                    f'profile/{server.id()}/{realmID}/{profileID}/'
                    'ladder/summary')
@@ -157,6 +172,7 @@ class SC2API:
 
     async def _get_metadata(self, server: model.Server,
                             realmID, profileID):
+        """Collect a player's meta data."""
         api_url = ('https://eu.api.blizzard.com/sc2/'
                    f'metadata/profile/{server.id()}/{realmID}/{profileID}')
         payload = {'locale': 'en_US',
@@ -168,6 +184,7 @@ class SC2API:
 
     async def _get_ladder_data(self, server: model.Server,
                                realmID, profileID, ladderID):
+        """Collect data of a specific player's ladder."""
         api_url = ('https://eu.api.blizzard.com/sc2/profile/'
                    f'{server.id()}/{realmID}/{profileID}/ladder/{ladderID}')
         payload = {'locale': 'en_US',
@@ -228,6 +245,7 @@ class SC2API:
 
     async def _get_match_history(self, server: model.Server,
                                  realmID, profileID, scope='1v1'):
+        """Collect matches of a specific scope from the match history."""
         api_url = ('https://eu.api.blizzard.com/sc2/legacy/profile/'
                    f'{server.id()}/{realmID}/{profileID}/matches')
         payload = {'locale': 'en_US',
@@ -247,6 +265,7 @@ class SC2API:
         return match_history
 
     async def _perform_api_request(self, url, **kwargs):
+        """Perform a generic api request (including retries)."""
         error = ''
         json = {}
         max_retries = 5
@@ -280,8 +299,12 @@ class SC2API:
 
 
 class InvalidApiResponse(Exception):
+    """Invalid API Response exception."""
+
     def __init__(self, api_url):
+        """Init InvalidApiResponse exception."""
         self.api_url = api_url
 
     def __str__(self):
+        """Return URL of invalid api request."""
         return repr(self.api_url)
