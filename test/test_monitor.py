@@ -8,7 +8,9 @@ from sc2monitor.model import Log, Match, Player, Server
 async def monitor_loop(**kwargs):
     async with Controller(**kwargs) as ctrl:
 
-        assert await ctrl.sc2api.get_access_token() != ''
+        token = await ctrl.sc2api.get_access_token()
+        assert token != ''
+        assert await ctrl.sc2api.check_access_token(token)
 
         ctrl.add_player('https://starcraft2.com/en-gb/profile/2/1/221986')
         ctrl.add_player('https://starcraft2.com/en-gb/profile/2/1/1982648')

@@ -2,7 +2,7 @@
 import asyncio
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from aiohttp import BasicAuth
 from aiohttp.client_exceptions import ClientResponseError, ContentTypeError
@@ -58,12 +58,17 @@ class SC2API:
             self._access_token_checked = False
 
     async def check_access_token(self, token):
-        """Check if the access token is valid."""
+        """Check if the access token is valid for at least an hour."""
         async with self._session.get(
                 'https://eu.battle.net/oauth/check_token',
                 params={'token': token}) as resp:
             self.request_count += 1
-            self._access_token_checked = resp.status == 200
+            valid = resp.status == 200
+            if valid:
+                json = await resp.json()
+                exp = datetime.fromtimestamp(json['exp'])
+                valid = valid and exp - datetime.now() >= timedelta(hours=1)
+            self._access_token_checked = valid
         return self._access_token_checked
 
     async def get_access_token(self):
@@ -74,7 +79,8 @@ class SC2API:
                     and not await self.check_access_token(
                         self._access_token))):
                 await self.receive_new_access_token()
-
+        await self.check_access_token(
+            self._access_token)
         return self._access_token
 
     async def receive_new_access_token(self):
