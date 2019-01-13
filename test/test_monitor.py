@@ -4,12 +4,14 @@ from sc2monitor.controller import Controller
 from sc2monitor.model import Log, Player, Match, Server
 
 
+
 async def monitor_loop(**kwargs):
     async with Controller(**kwargs) as ctrl:
         
         assert await ctrl.sc2api.get_access_token() != ''
         
         ctrl.add_player('https://starcraft2.com/en-gb/profile/2/1/221986')
+        ctrl.add_player('https://starcraft2.com/en-gb/profile/2/1/1982648')
        
         await ctrl.run()
         assert ctrl.sc2api.request_count > 0
@@ -28,6 +30,27 @@ async def monitor_loop(**kwargs):
         
         matches = ctrl.db_session.query(Match).filter(Match.player == player).count()
         assert matches <= 25
+        
+        player = ctrl.db_session.query(Player).filter(
+            Player.player_id == 1982648).limit(1).scalar()
+        assert player is not None
+        assert player.name != ''
+        assert player.realm == 1
+        assert player.server == Server.Europe
+        assert player.player_id == 1982648
+        
+        matches = ctrl.db_session.query(Match).filter(Match.player == player).count()
+        assert matches <= 25
+        
+        ctrl.remove_player('https://starcraft2.com/en-gb/profile/2/1/221986')
+        ctrl.remove_player('https://starcraft2.com/en-gb/profile/2/1/1982648')
+        
+        player = ctrl.db_session.query(Player).filter(
+            Player.player_id == 221986).limit(1).scalar()
+        assert player == None
+        
+        matches = ctrl.db_session.query(Match).filter(Match.player == player).count()
+        assert matches == 0
 
 
 def test_monitor(apikey, apisecret, db, user, passwd, protocol):
