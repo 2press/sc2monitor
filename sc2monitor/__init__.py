@@ -56,7 +56,7 @@ async def main_loop():
     """Define the asyncio main loop of the sc2monitor."""
     kwargs = {}
     if db_credentials['passwd'] is not None:
-        db_credentials['passwd'] == ''
+        db_credentials['passwd'] = ''
     kwargs['db'] = '{protocol}://{user}:{passwd}@{host}/{db}'.format(
         **db_credentials)
     if api_credentials['key'] is not None:
