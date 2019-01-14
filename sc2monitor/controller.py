@@ -623,16 +623,21 @@ class Controller:
                     # Player was promoted/demoted to/from GM!
                     promotion = data['league'] == model.League.Grandmaster
                     demotion = player.league == model.League.Grandmaster
-                    assert promotion != demotion
+                    if promotion == demotion:
+                        logger.warning(
+                            'Logical error in GM promotion/'
+                            'demotion detection.')
                     player.ladder_joined = data['joined']
                     player.ladder_id = data['ladder_id']
                     player.league = data['league']
                     self.db_session.commit()
                     logger.info(f"{player.id}: GM promotion/demotion.")
                 else:
-                    assert data['league'] >= player.league
-                    logger.info(f"{player.id}: Promotion "
-                                f"to ladder {data['ladder_id']}!")
+                    if data['league'] < player.league:
+                        logger.warning('Logical error in promtion detection.')
+                    else:
+                        logger.info(f"{player.id}: Promotion "
+                                    f"to ladder {data['ladder_id']}!")
         else:
             missing['Win'] -= player.wins
             missing['Loss'] -= player.losses
