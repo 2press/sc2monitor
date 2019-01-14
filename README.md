@@ -1,8 +1,9 @@
+![Python Versions](https://img.shields.io/pypi/pyversions/sc2monitor.svg)
 [![PyPi](https://img.shields.io/pypi/v/sc2monitor.svg)](https://pypi.org/project/sc2monitor/)
-![](https://img.shields.io/pypi/pyversions/sc2monitor.svg)
-[![Build Status](https://travis-ci.com/2press/sc2monitor.svg?branch=master)](https://travis-ci.com/2press/sc2monitor)
-[![Requirements Status](https://requires.io/github/2press/sc2monitor/requirements.svg?branch=master)](https://requires.io/github/2press/sc2monitor/requirements/?branch=master)
 [![License](https://img.shields.io/github/license/2press/sc2monitor.svg)](https://github.com/2press/sc2monitor/blob/master/LICENSE)
+[![Build Status](https://travis-ci.com/2press/sc2monitor.svg?branch=master)](https://travis-ci.com/2press/sc2monitor)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c201266249ed4901ad2a09f1629e6229)](https://app.codacy.com/app/2press/sc2monitor?utm_source=github.com&utm_medium=referral&utm_content=2press/sc2monitor&utm_campaign=Badge_Grade_Dashboard)
+[![Requirements Status](https://requires.io/github/2press/sc2monitor/requirements.svg?branch=master)](https://requires.io/github/2press/sc2monitor/requirements/?branch=master)
 
 # sc2monitor
 Python (>=3.7) script that when executed regularly keeps track of medium amount StarCraft 2 accounts on the 1vs1 ladder
