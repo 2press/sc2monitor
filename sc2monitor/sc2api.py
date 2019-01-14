@@ -171,9 +171,9 @@ class SC2API:
         ladders = set()
         for ladder in data:
             if ladder.get('localizedGameMode', '').find('1v1') != -1:
-                id = ladder.get('ladderId')
-                if id not in ladders:
-                    ladders.add(id)
+                ladder_id = ladder.get('ladderId')
+                if ladder_id not in ladders:
+                    ladders.add(ladder_id)
         return ladders
 
     async def _get_metadata(self, server: model.Server,
@@ -210,8 +210,9 @@ class SC2API:
                 idx = meta_data.get('rank') - 1
                 team = data.get('ladderTeams')[idx]
                 player = team.get('teamMembers')[0]
-                assert int(player.get('id')) == profileID
-                assert int(player.get('realm')) == realmID
+                if (int(player.get('id')) != profileID
+                        or int(player.get('realm')) != realmID):
+                    raise InvalidApiResponse(api_url)
                 used.append(idx)
             except (IndexError, AssertionError):
                 found = False

@@ -232,7 +232,7 @@ class Controller:
         match_history = await self.sc2api.get_match_history(
             complete_data[0]['player'])
 
-        for match_key, match in enumerate(match_history):
+        for match in match_history:
             positive = []
             for data_key, data in enumerate(complete_data):
                 needed = data['missing'][match['result'].describe()] > 0
@@ -296,7 +296,6 @@ class Controller:
         player.wins = new_data['wins']
         player.losses = new_data['losses']
         player.last_active_season = self.get_season_id(player.server)
-        self.current_season
         if player.name != new_data['name']:
             await self.update_player_name(
                 player,
@@ -392,7 +391,8 @@ class Controller:
 
         self.db_session.commit()
 
-    def guess_games(self, complete_data, last_played):
+    @classmethod
+    def guess_games(cls, complete_data, last_played):
         """Guess games of a player if missing in match history."""
         # If a player isn't new in the database and has played more
         # than 25 games since the last refresh or the match
