@@ -468,7 +468,7 @@ class Controller:
         wins = complete_data['Win']
         losses = complete_data['Loss']
         complete_data['games'] = sorted(
-            complete_data['games'], key=itemgetter('datetime'))
+            complete_data.get('games', []), key=itemgetter('datetime'))
         logger.info('{}: Adding {} wins and {} losses!'.format(
             complete_data['player'].id, wins, losses))
 
@@ -621,6 +621,16 @@ class Controller:
                 missing['Win'] -= player.wins
                 missing['Loss'] -= player.losses
                 new = player.mmr == 0
+                if missing['Win'] + missing['Loss'] == 0:
+                    # Player was promoted/demoted to/from GM!
+                    promotion = data['league'] == model.League.Grandmaster
+                    demotion = player.league == model.League.Grandmaster
+                    assert promotion != demotion
+                    player.ladder_joined = data['joined']
+                    player.ladder = data['ladder']
+                    player.league = data['league']
+                    self.db_session.commit()
+                    logger.info(f"{player.id}: GM promotion/demotion.")
         else:
             missing['Win'] -= player.wins
             missing['Loss'] -= player.losses
