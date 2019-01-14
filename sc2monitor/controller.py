@@ -616,8 +616,6 @@ class Controller:
                 new = True
             else:
                 # Promotion?!
-                logger.info(f"{player.id}: Promotion(?) "
-                            f"to ladder {data['ladder_id']}!")
                 missing['Win'] -= player.wins
                 missing['Loss'] -= player.losses
                 new = player.mmr == 0
@@ -627,10 +625,14 @@ class Controller:
                     demotion = player.league == model.League.Grandmaster
                     assert promotion != demotion
                     player.ladder_joined = data['joined']
-                    player.ladder = data['ladder_id']
+                    player.ladder_id = data['ladder_id']
                     player.league = data['league']
                     self.db_session.commit()
                     logger.info(f"{player.id}: GM promotion/demotion.")
+                else:
+                    assert data['league'] >= player.league
+                    logger.info(f"{player.id}: Promotion "
+                                f"to ladder {data['ladder_id']}!")
         else:
             missing['Win'] -= player.wins
             missing['Loss'] -= player.losses
