@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c201266249ed4901ad2a09f1629e6229)](https://app.codacy.com/app/2press/sc2monitor?utm_source=github.com&utm_medium=referral&utm_content=2press/sc2monitor&utm_campaign=Badge_Grade_Dashboard)
 [![PyPi](https://img.shields.io/pypi/v/sc2monitor.svg)](https://pypi.org/project/sc2monitor/)
 ![](https://img.shields.io/pypi/pyversions/sc2monitor.svg)
 [![Build Status](https://travis-ci.com/2press/sc2monitor.svg?branch=master)](https://travis-ci.com/2press/sc2monitor)
