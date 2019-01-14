@@ -627,7 +627,7 @@ class Controller:
                     demotion = player.league == model.League.Grandmaster
                     assert promotion != demotion
                     player.ladder_joined = data['joined']
-                    player.ladder = data['ladder']
+                    player.ladder = data['ladder_id']
                     player.league = data['league']
                     self.db_session.commit()
                     logger.info(f"{player.id}: GM promotion/demotion.")
@@ -681,20 +681,21 @@ class Controller:
         unique_group = (model.Player.player_id,
                         model.Player.realm, model.Player.server)
         tasks = []
+        players = self.db_session.query(model.Player).distinct(
+            *unique_group).group_by(*unique_group).all()
 
-        for player in self.db_session.query(
-                model.Player).distinct(
-                *unique_group).group_by(*unique_group).all():
+        for player in players:
             tasks.append(asyncio.create_task(self.query_player(player)))
 
-        for result in await asyncio.gather(*tasks, return_exceptions=True):
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for key, result in enumerate(results):
             try:
                 if result is not None:
                     raise result
             except Exception:
                 logger.exception(
                     'The following exception was'
-                    f' raised while quering player {player.id}:')
+                    f' raised while quering player {players[key].id}:')
 
         if False:
             for player in self.db_session.query(
