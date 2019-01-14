@@ -19,7 +19,6 @@ deploy:
   password: "$pypi"
   skip_existing: true
   on:
-    tags: true
     distributions: "sdist bdist_wheel"
     branch: master
     condition: $TRAVIS_PYTHON_VERSION=3.7
