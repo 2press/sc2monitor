@@ -239,7 +239,7 @@ class Controller:
                 try:
                     datetime_check = (match['datetime']
                                       - data['player'].last_played
-                                      > timedelta(seconds=-30))
+                                      > timedelta(seconds=0))
                 except TypeError:
                     datetime_check = True
                 if (needed and datetime_check):
@@ -418,7 +418,7 @@ class Controller:
         if delta > timedelta(minutes=3):
             delta = timedelta(minutes=3)
 
-        if delta.total_seconds() < 0:
+        if delta.total_seconds() <= 0:
             last_played = datetime.now()
             delta = timedelta(minutes=3)
 
