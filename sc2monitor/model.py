@@ -222,7 +222,7 @@ class League(enum.Enum):
                     return cls[league]
         elif isinstance(value, int):
             return League(value)
-        raise ValueError(f'Unknown league {league}')
+        raise ValueError(f'Unknown league {value}')
 
     def describe(self):
         """Return the name of the league."""

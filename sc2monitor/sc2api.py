@@ -309,7 +309,7 @@ class InvalidApiResponse(Exception):
     """Invalid API Response exception."""
 
     def __init__(self, api_url):
-        """Init InvalidApiResponse exception."""
+        """Init the InvalidApiResponse exception."""
         self.api_url = api_url
 
     def __str__(self):
