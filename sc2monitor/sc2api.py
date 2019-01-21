@@ -202,7 +202,7 @@ class SC2API:
         league = model.League.get(data.get('league'))
         found_idx = -1
         found = 0
-        used = []
+        used = set()
         for meta_data in data.get('ranksAndPools'):
             mmr = meta_data.get('mmr')
 
@@ -210,23 +210,23 @@ class SC2API:
                 idx = meta_data.get('rank') - 1
                 team = data.get('ladderTeams')[idx]
                 player = team.get('teamMembers')[0]
+                used.add(idx)
                 if (int(player.get('id')) != profileID
                         or int(player.get('realm')) != realmID):
                     raise InvalidApiResponse(api_url)
-                used.append(idx)
             except (IndexError, InvalidApiResponse):
                 found = False
                 for team_idx in range(
                         found_idx + 1, len(data.get('ladderTeams'))):
                     team = data.get('ladderTeams')[team_idx]
                     player = team.get('teamMembers')[0]
-                    if (team_idx not in used
-                        and int(player.get('id')) == profileID
-                            and int(player.get('realm')) == realmID):
-                        found_idx = team_idx
-                        used.append(team_idx)
-                        found = True
-                        break
+                    if (team_idx not in used):
+                        used.add(team_idx)
+                        if (int(player.get('id')) == profileID
+                                and int(player.get('realm')) == realmID):
+                            found_idx = team_idx
+                            found = True
+                            break
 
                 if not found:
                     raise InvalidApiResponse(api_url)
@@ -235,7 +235,7 @@ class SC2API:
                 logger.debug(
                     f'{api_url}: MMR in ladder request'
                     f" does not match {mmr} vs {team.get('mmr')}.")
-                mmr = team.get('mmr')
+                mmr = team.get('mmr', mmr)
             race = player.get('favoriteRace')
             games = int(team.get('wins')) + int(team.get('losses'))
 
