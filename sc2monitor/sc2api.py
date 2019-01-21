@@ -214,7 +214,7 @@ class SC2API:
                         or int(player.get('realm')) != realmID):
                     raise InvalidApiResponse(api_url)
                 used.append(idx)
-            except (IndexError, AssertionError, InvalidApiResponse):
+            except (IndexError, InvalidApiResponse):
                 found = False
                 for team_idx in range(
                         found_idx + 1, len(data.get('ladderTeams'))):
