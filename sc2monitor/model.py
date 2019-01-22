@@ -414,6 +414,26 @@ class Log(Base):
             self.datetime.strftime('%m/%d/%Y-%H:%M:%S'), self.msg[:50])
 
 
+class Run(Base):
+    """Run database entry."""
+
+    __tablename__ = "runs"
+    id = Column(Integer, primary_key=True)
+    datetime = Column(DateTime, default=datetime.now) 
+    duration = Column(Float, default=0.0)
+    api_requests = Column(Integer, default=0)
+    api_retries = Column(Integer, default=0)
+    warnings = Column(Integer, default=0)
+    errors = Column(Integer, default=0)
+
+    def __repr__(self):
+        """Represent database object."""
+        return (f'<Run(id={self.id}, datetime={self.datetime}, '
+                f'duration={self.duration:.2f}, api_requests={self.api_requests}), '
+                f'api_retries={self.api_retries}, warnings={self.warnings}, '
+                f'errors={self.errors}>')
+
+
 def create_db_session(db='', encoding=''):
     """Create a new database session."""
     if not db:
