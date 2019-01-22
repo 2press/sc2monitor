@@ -79,9 +79,7 @@ class SC2API:
                     and not await self.check_access_token(
                         self._access_token))):
                 await self.receive_new_access_token()
-        await self.check_access_token(
-            self._access_token)
-        return self._access_token
+            return self._access_token
 
     async def receive_new_access_token(self):
         """Receive a new acces token vai oauth."""
