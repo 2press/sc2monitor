@@ -29,6 +29,10 @@ async def monitor_loop(**kwargs):
         errors = ctrl.db_session.query(Log).filter(
             Log.level == 'ERROR').count()
         assert errors == 0
+        
+        warnings = ctrl.db_session.query(Log).filter(
+            Log.level == 'WARNING').count()
+        assert warnings == run.warnings
 
         player = ctrl.db_session.query(Player).filter(
             Player.player_id == 221986).limit(1).scalar()
