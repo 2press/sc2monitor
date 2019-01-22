@@ -710,11 +710,12 @@ class Controller:
                 self.update_ema_mmr(player)
 
         duration = time.time() - start_time
-
         self.db_session.add(
             model.Run(duration=duration,
                       api_requests=self.sc2api.request_count,
-                      api_retries=self.sc2api.retry_count))
+                      api_retries=self.sc2api.retry_count,
+                      warnings=self.handler.warnings,
+                      errors=self.handler.erros))
         self.db_session.commit()
 
         logger.debug(f"Finished job performing {self.sc2api.request_count}"
