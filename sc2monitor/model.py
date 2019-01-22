@@ -419,7 +419,7 @@ class Run(Base):
 
     __tablename__ = "runs"
     id = Column(Integer, primary_key=True)
-    datetime = Column(DateTime, default=datetime.now) 
+    datetime = Column(DateTime, default=datetime.now)
     duration = Column(Float, default=0.0)
     api_requests = Column(Integer, default=0)
     api_retries = Column(Integer, default=0)
