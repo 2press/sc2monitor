@@ -2,7 +2,7 @@
 import asyncio
 
 from sc2monitor.controller import Controller
-from sc2monitor.model import Log, Match, Player, Server
+from sc2monitor.model import Log, Match, Player, Server, Run
 
 
 async def monitor_loop(**kwargs):
@@ -17,6 +17,14 @@ async def monitor_loop(**kwargs):
 
         await ctrl.run()
         assert ctrl.sc2api.request_count > 0
+        
+        run = ctrl.db_session.query(Run).order_by(
+            Run.datetime.desc()).limit(1).scalar()
+        
+        assert run is not None
+        assert run.requests == ctrl.sc2api.request_count
+        assert run.retries == ctrl.sc2api.retry_count
+        assert run.duration > 0.0
 
         errors = ctrl.db_session.query(Log).filter(
             Log.level == 'ERROR').count()
