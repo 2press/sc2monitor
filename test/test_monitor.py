@@ -22,8 +22,8 @@ async def monitor_loop(**kwargs):
             Run.datetime.desc()).limit(1).scalar()
         
         assert run is not None
-        assert run.requests == ctrl.sc2api.request_count
-        assert run.retries == ctrl.sc2api.retry_count
+        assert run.api_requests == ctrl.sc2api.request_count
+        assert run.api_retries == ctrl.sc2api.retry_count
         assert run.duration > 0.0
 
         errors = ctrl.db_session.query(Log).filter(
