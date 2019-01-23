@@ -162,6 +162,7 @@ class Controller:
             self.db_session.add(current_season)
             self.db_session.commit()
             self.db_session.refresh(current_season)
+            logger.info(f'Found a new ladder season: {current_season}')
             return current_season
         else:
             season.start = current_season.start
@@ -286,7 +287,7 @@ class Controller:
             self.calc_statistics(race_player['player'])
 
     async def update_player(self, complete_data):
-        """Uppdate database with new data of a player."""
+        """Update database with new data of a player."""
         player = complete_data['player']
         new_data = complete_data['new_data']
         player.mmr = new_data['mmr']
