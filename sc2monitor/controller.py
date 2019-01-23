@@ -719,5 +719,5 @@ class Controller:
         self.db_session.commit()
 
         logger.debug(f"Finished job performing {self.sc2api.request_count}"
-                    f" api requests ({self.sc2api.retry_count} retries)"
-                    f" in {duration:.2f} seconds.")
+                     f" api requests ({self.sc2api.retry_count} retries)"
+                     f" in {duration:.2f} seconds.")

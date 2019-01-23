@@ -429,7 +429,8 @@ class Run(Base):
     def __repr__(self):
         """Represent database object."""
         return (f'<Run(id={self.id}, datetime={self.datetime}, '
-                f'duration={self.duration:.2f}, api_requests={self.api_requests}), '
+                f'duration={self.duration:.2f}, '
+                f'api_requests={self.api_requests}), '
                 f'api_retries={self.api_retries}, warnings={self.warnings}, '
                 f'errors={self.errors}>')
 
