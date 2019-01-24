@@ -602,7 +602,7 @@ class Controller:
         elif (player.last_active_season < self.get_season_id(player.server)):
             # New Season!
             # TODO: Check if last season endpoint can be requested!
-            # Only the legacy endpoints give the option to query the 
+            # Only the legacy endpoints give the option to query the
             # previous season's data (given that the ladder ID is
             # known), e.g.:
             # https://eu.api.blizzard.com/sc2/legacy/ladder/2/209966
