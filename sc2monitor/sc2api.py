@@ -122,7 +122,7 @@ class SC2API:
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)
         if status != 200:
-            raise InvalidApiResponse(status)
+            raise InvalidApiResponse(f'{status}: {api_url}')
 
         return model.Season(
             season_id=data.get('seasonId'),
@@ -164,7 +164,7 @@ class SC2API:
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)
         if status != 200:
-            raise InvalidApiResponse(status)
+            raise InvalidApiResponse(f'{status}: {api_url}')
         data = data.get('allLadderMemberships', [])
         ladders = set()
         for ladder in data:
@@ -183,7 +183,7 @@ class SC2API:
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)
         if status != 200:
-            raise InvalidApiResponse(status)
+            raise InvalidApiResponse(f'{status}: {api_url}')
         return data
 
     async def _get_ladder_data(self, server: model.Server,
@@ -195,7 +195,7 @@ class SC2API:
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)
         if status != 200:
-            raise InvalidApiResponse(status)
+            raise InvalidApiResponse(f'{status}: {api_url}')
 
         league = model.League.get(data.get('league'))
         found_idx = -1
@@ -257,7 +257,7 @@ class SC2API:
                    'access_token': await self.get_access_token()}
         data, status = await self._perform_api_request(api_url, params=payload)
         if status != 200:
-            raise InvalidApiResponse(status)
+            raise InvalidApiResponse(f'{status}: {api_url}')
 
         match_history = []
         for match in data.get('matches', []):
