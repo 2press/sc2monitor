@@ -8,7 +8,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='sc2monitor',
-      version='0.2.24',
+      version='0.2.25',
       description=('When executed regularly keeps track of medium'
                    ' amount of StarCraft 2 accounts on the 1vs1 ladder'),
       long_description=long_description,
@@ -23,7 +23,7 @@ setup(name='sc2monitor',
       install_requires=[
           'PyMySQL >= 0.9.3',
           'aiohttp >= 3.5.4',
-          'sqlalchemy >= 1.2.16'
+          'sqlalchemy >= 1.2.17'
       ],
       zip_safe=False,
       classifiers=[
