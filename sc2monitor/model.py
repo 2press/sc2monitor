@@ -3,7 +3,7 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import (Boolean, Column, DateTime, Enum, Float, ForeignKey,
-                        Integer, String, UniqueConstraint, create_engine)
+                        Integer, String, UniqueConstraint, create_engine, text)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 
@@ -300,16 +300,16 @@ class Player(Base):
     __table_args__ = tuple(UniqueConstraint(
         'player_id', 'realm', 'server', 'race'))
     id = Column(Integer, primary_key=True)
-    player_id = Column(Integer, default=False)
-    realm = Column(Integer, default=1)
+    player_id = Column(Integer)
+    realm = Column(Integer, default=1, server_default=text("1"))
     server = Column(Enum(Server), default=Server.Europe)
     name = Column(String(64), default='')
     race = Column(Enum(Race), default=Race.Random)
-    ladder_id = Column(Integer, default=0)
+    ladder_id = Column(Integer, default=0, server_default=text("0"))
     league = Column(Enum(League), default=League.Unranked)
-    mmr = Column(Integer, default=0)
-    wins = Column(Integer, default=0)
-    losses = Column(Integer, default=0)
+    mmr = Column(Integer, default=0, server_default=text("0"))
+    wins = Column(Integer, default=0, server_default=text("0"))
+    losses = Column(Integer, default=0, server_default=text("0"))
     refreshed = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     last_played = Column(DateTime)
     ladder_joined = Column(DateTime)
@@ -341,12 +341,12 @@ class Match(Base):
     player = relationship(Player, back_populates="matches", uselist=False)
     result = Column(Enum(Result), default=Result.Unknown)
     datetime = Column(DateTime, default=datetime.now)
-    mmr = Column(Integer, default=0)
-    mmr_change = Column(Integer, default=0)
-    guess = Column(Boolean, default=False)
-    max_length = Column(Integer, default=180)
+    mmr = Column(Integer, default=0, server_default=text("0"))
+    mmr_change = Column(Integer, default=0, server_default=text("0"))
+    guess = Column(Boolean, default=False, server_default=text("0"))
+    max_length = Column(Integer, default=180, server_default=text("180"))
     ema_mmr = Column(Float, default=same_as('mmr'))
-    emvar_mmr = Column(Float, default=0.0)
+    emvar_mmr = Column(Float, default=0.0, server_default=text("0.0"))
 
     def __repr__(self):
         """Represent database object."""
