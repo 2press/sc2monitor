@@ -465,6 +465,8 @@ class Controller:
     def guess_mmr_changes(self, complete_data):
         """Guess MMR change of matches."""
         MMR = complete_data['player'].mmr
+        if MMR is None:
+            MMR = 0
         totalMMRchange = complete_data['new_data']['mmr'] - MMR
         wins = complete_data['Win']
         losses = complete_data['Loss']
