@@ -211,6 +211,7 @@ class Controller:
         if len(complete_data) > 0:
             await self.process_player(complete_data, new)
         elif (not player.name
+                or player.refreshed is None
                 or player.refreshed <= datetime.now() - timedelta(days=1)):
             await self.update_player_name(player)
 
