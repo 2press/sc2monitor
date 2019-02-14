@@ -137,7 +137,11 @@ def test_league():
     assert League.Diamond > League.Unranked
     assert League.Platinum >= League.Platinum
 
-    assert League.Master > 5 == NotImplemented
-    assert League.Master < 'Diamond' == NotImplemented
-    assert League.Master >= 5 == NotImplemented
-    assert League.Master <= 'Diamond' == NotImplemented
+    with pytest.raises(TypeError):
+        assert League.Master > 5
+    with pytest.raises(TypeError):
+        League.Master < 'Diamond' == NotImplemented
+    with pytest.raises(TypeError):
+        League.Master >= 5 == NotImplemented
+    with pytest.raises(TypeError):
+        League.Master <= 'Diamond' == NotImplemented

@@ -98,9 +98,12 @@ async def monitor_loop(**kwargs):
             raise_key_error=False,
             return_object=True) is None
 
-        assert ctrl.get_config(
+        ctrl.set_config('analyze_matches', 52)
+        cfg_object = ctrl.get_config(
             'analyze_matches',
-            return_object=True) is not None
+            return_object=True)
+        assert cfg_object is not None
+        assert cfg_object.value == str(52)
 
 
 def test_monitor(apikey, apisecret, db, user, passwd, protocol):
