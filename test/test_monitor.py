@@ -91,7 +91,16 @@ async def monitor_loop(**kwargs):
             ctrl.get_config('nonexisting_key')
 
         assert ctrl.get_config(
-            'nonexisting_key', raise_key_error=False) is None
+            'nonexisting_key', raise_key_error=False) == ''
+
+        assert ctrl.get_config(
+            'nonexisting_key',
+            raise_key_error=False,
+            return_object=True) is None
+
+        assert ctrl.get_config(
+            'analyze_matches',
+            return_object=True) is not None
 
 
 def test_monitor(apikey, apisecret, db, user, passwd, protocol):
