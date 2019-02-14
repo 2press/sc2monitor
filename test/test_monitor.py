@@ -1,8 +1,10 @@
 """Test basic function of the sc2monitor."""
 import asyncio
 
+import pytest
+
 from sc2monitor.controller import Controller
-from sc2monitor.model import Log, Match, Player, Server, Run
+from sc2monitor.model import Log, Match, Player, Run, Server
 
 
 async def monitor_loop(**kwargs):
@@ -17,10 +19,10 @@ async def monitor_loop(**kwargs):
 
         await ctrl.run()
         assert ctrl.sc2api.request_count > 0
-        
+
         run = ctrl.db_session.query(Run).order_by(
             Run.datetime.desc()).limit(1).scalar()
-        
+
         assert run is not None
         assert run.api_requests == ctrl.sc2api.request_count
         assert run.api_retries == ctrl.sc2api.retry_count
@@ -29,7 +31,7 @@ async def monitor_loop(**kwargs):
         errors = ctrl.db_session.query(Log).filter(
             Log.level == 'ERROR').count()
         assert errors == 0
-        
+
         warnings = ctrl.db_session.query(Log).filter(
             Log.level == 'WARNING').count()
         assert warnings == run.warnings
@@ -58,6 +60,21 @@ async def monitor_loop(**kwargs):
             Match.player == player).count()
         assert matches <= 25
 
+        await ctrl.run()
+
+        run = ctrl.db_session.query(Run).order_by(
+            Run.datetime.desc()).limit(1).scalar()
+
+        assert run.duration > 0.0
+
+        errors = ctrl.db_session.query(Log).filter(
+            Log.level == 'ERROR').count()
+        assert errors == 0
+
+        warnings = ctrl.db_session.query(Log).filter(
+            Log.level == 'WARNING').count()
+        assert warnings == run.warnings
+
         ctrl.remove_player('https://starcraft2.com/en-gb/profile/2/1/221986')
 
         matches = ctrl.db_session.query(Match).filter(
@@ -69,6 +86,12 @@ async def monitor_loop(**kwargs):
         player = ctrl.db_session.query(Player).filter(
             Player.player_id == 221986).limit(1).scalar()
         assert player is None
+
+        with pytest.raises(ValueError):
+            ctrl.get_config('nonexisting_key')
+
+        assert ctrl.get_config(
+            'nonexisting_key', raise_key_error=False) is None
 
 
 def test_monitor(apikey, apisecret, db, user, passwd, protocol):

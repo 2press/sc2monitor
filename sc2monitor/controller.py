@@ -230,8 +230,8 @@ class Controller:
             tmp_player.name = name
         self.db_session.commit()
 
-    async def process_player(self, complete_data, new=False):
-        """Process the api data of a player."""
+    def check_match_history(self, complete_data, match):
+        """Check matches in match history and assign them to races."""
         match_history = await self.sc2api.get_match_history(
             complete_data[0]['player'])
 
@@ -272,6 +272,12 @@ class Controller:
         except Exception:
             last_played = datetime.now()
 
+        return last_played, len(match_history)
+
+    async def process_player(self, complete_data, new=False):
+        """Process the api data of a player."""
+        last_played, len_history = self.check_match_history(complete_data)
+
         for race_player in complete_data:
             race_player['missing']['Total'] = race_player['missing']['Win'] + \
                 race_player['missing']['Loss']
@@ -280,7 +286,7 @@ class Controller:
                     logger.info(
                         f"{race_player['player'].id}: Ignoring "
                         f"{race_player['missing']['Total']} games missing in"
-                        f" match history ({len(match_history)}) "
+                        f" match history ({len_history}) "
                         "of new player.")
                 else:
                     self.guess_games(race_player, last_played)

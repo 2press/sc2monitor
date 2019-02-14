@@ -25,7 +25,7 @@ class Result(enum.Enum):
             return value
         elif isinstance(value, str):
             if not value:
-              return cls.Unknown
+                return cls.Unknown
             for result in cls.__members__:
                 if result[0].lower() == value[0].lower():
                     return cls[result]
@@ -228,9 +228,7 @@ class League(enum.Enum):
 
     def describe(self):
         """Return the name of the league."""
-        if self.value == -1:
-            desc = "Unranked"
-        elif self.value == 0:
+        if self.value == 0:
             desc = "Bronze"
         elif self.value == 1:
             desc = "Silver"
@@ -245,7 +243,7 @@ class League(enum.Enum):
         elif self.value == 6:
             desc = "Grandmaster"
         else:
-            desc = ""
+            desc = "Unranked"
 
         return desc
 

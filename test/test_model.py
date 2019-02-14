@@ -43,7 +43,8 @@ def test_result_tie():
     assert Result.Tie.change() == 0
     assert Result.Tie.short() == 'D'
     assert str(Result.Tie) == 'Tie'
-    
+
+
 def test_result_unknown():
     assert Result.get('') == Result.Unknown
     assert Result.get(Result.Unknown) == Result.Unknown
@@ -53,6 +54,8 @@ def test_result_unknown():
     assert Result.Unknown.change() == 0
     assert Result.Unknown.short() == 'U'
     assert str(Result.Unknown) == 'Unknown'
+    assert Result.get('asdasda') == Result.Unknown
+
 
 def test_race():
     def assert_race(race: str, assert_race: Race):
@@ -72,10 +75,11 @@ def test_race():
     assert_race('terran', Race.Terran)
     assert_race('random', Race.Random)
     assert Race.get('') == Race.Random
-    
+
     with pytest.raises(ValueError):
         Race.get('Human')
-       
+
+
 def test_server():
     assert str(Server.America) == 'America'
     assert str(Server.Europe) == 'Europe'
@@ -86,7 +90,7 @@ def test_server():
     assert Server.America.id() == 1
     assert Server.Europe.id() == 2
     assert Server.Korea.id() == 3
-        
+
 
 def test_league():
     def assert_league(league: str, assert_league: League, ident: int):
@@ -117,7 +121,7 @@ def test_league():
     assert_league('diamond', League.Diamond, 4)
     assert_league('master', League.Master, 5)
     assert_league('grandmaster', League.Grandmaster, 6)
-    
+
     assert League.get('') == League.Unranked
     with pytest.raises(ValueError):
         League.get('Test')
@@ -125,10 +129,19 @@ def test_league():
         League.get(-2)
     with pytest.raises(ValueError):
         League.get(7)
-    
+
     assert League.Master < League.Grandmaster
     assert League.Master <= League.Grandmaster
     assert League.Gold > League.Silver
     assert League.Gold >= League.Silver
     assert League.Diamond > League.Unranked
     assert League.Platinum >= League.Platinum
+
+    with pytest.raises(NotImplemented):
+        assert League.Master > 5
+    with pytest.raises(NotImplemented):
+        assert League.Master < 'Diamond'
+    with pytest.raises(NotImplemented):
+        assert League.Master >= 5
+    with pytest.raises(NotImplemented):
+        assert League.Master <= 'Diamond'
