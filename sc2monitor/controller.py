@@ -230,7 +230,7 @@ class Controller:
             tmp_player.name = name
         self.db_session.commit()
 
-    async def check_match_history(self, complete_data, match):
+    async def check_match_history(self, complete_data):
         """Check matches in match history and assign them to races."""
         match_history = await self.sc2api.get_match_history(
             complete_data[0]['player'])
