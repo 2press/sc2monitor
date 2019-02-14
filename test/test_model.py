@@ -127,7 +127,7 @@ def test_league():
         League.get(8)
     
     assert League.Master < League.Grandmaster
-    assert League.Master =< League.Grandmaster
+    assert League.Master <= League.Grandmaster
     assert League.Gold > League.Silver
     assert League.Gold >= League.Silver
     assert League.Diamond > League.Unranked
