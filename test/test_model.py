@@ -64,7 +64,7 @@ def test_race():
         assert Race.get(race_short) == assert_race
         assert Race.get(race_short.upper()) == assert_race
         assert race_short.upper() == assert_race.short()
-        assert race_short.capitalize() == str(assert_race)
+        assert race.capitalize() == str(assert_race)
         assert Race.get(assert_race) == assert_race
 
     assert_race('zerg', Race.Zerg)
