@@ -121,11 +121,11 @@ def test_league():
     assert_league('grandmaster', League.Grandmaster, 6)
     
     assert League.get('') == League.Unranked
-    with pytest.raises(ValueError, match=r'.* is not a valid League'):
+    with pytest.raises(ValueError):
         League.get('Test')
-    with pytest.raises(ValueError, match=r'.* is not a valid League'):
+    with pytest.raises(ValueError):
         League.get(-2)
-    with pytest.raises(ValueError, match=r'.* is not a valid League'):
+    with pytest.raises(ValueError):
         League.get(7)
     
     assert League.Master < League.Grandmaster
