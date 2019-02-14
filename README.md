@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/github/license/2press/sc2monitor.svg)](https://github.com/2press/sc2monitor/blob/master/LICENSE)
 [![Build Status](https://travis-ci.com/2press/sc2monitor.svg?branch=master)](https://travis-ci.com/2press/sc2monitor)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c201266249ed4901ad2a09f1629e6229)](https://app.codacy.com/app/2press/sc2monitor?utm_source=github.com&utm_medium=referral&utm_content=2press/sc2monitor&utm_campaign=Badge_Grade_Dashboard)
+[![codecov](https://codecov.io/gh/2press/sc2monitor/branch/master/graph/badge.svg)](https://codecov.io/gh/2press/sc2monitor)
 [![Requirements Status](https://requires.io/github/2press/sc2monitor/requirements.svg?branch=master)](https://requires.io/github/2press/sc2monitor/requirements/?branch=master)
 
 # sc2monitor
