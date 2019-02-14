@@ -228,20 +228,22 @@ class League(enum.Enum):
         """Return the name of the league."""
         if self.value == -1:
             desc = "Unranked"
-        elif self.value == 1:
+        elif self.value == 0:
             desc = "Bronze"
-        elif self.value == 2:
+        elif self.value == 1:
             desc = "Silver"
-        elif self.value == 3:
+        elif self.value == 2:
             desc = "Gold"
-        elif self.value == 4:
+        elif self.value == 3:
             desc = "Platinum"
-        elif self.value == 5:
+        elif self.value == 4:
             desc = "Diamond"
-        elif self.value == 6:
+        elif self.value == 5:
             desc = "Master"
-        elif self.value == 7:
+        elif self.value == 6:
             desc = "Grandmaster"
+        else:
+            desc = ""
 
         return desc
 
