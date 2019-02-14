@@ -50,9 +50,9 @@ def test_result_unknown():
     assert Result.get('unknown') == Result.Unknown
     assert Result.get('u') == Result.Unknown
     assert Result.get('U') == Result.Unknown
-    assert Result.Unkown.change() == 0
-    assert Result.Unkown.short() == 'U'
-    assert str(Result.Unkown) == 'Unknown'
+    assert Result.Unknown.change() == 0
+    assert Result.Unknown.short() == 'U'
+    assert str(Result.Unknown) == 'Unknown'
 
 def test_race():
     def assert_race(race: str, assert_race: Race):
