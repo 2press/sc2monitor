@@ -98,6 +98,8 @@ async def monitor_loop(**kwargs):
             raise_key_error=False,
             return_object=True) is None
 
+        ctrl.set_config('analyze_matches', 50)
+        ctrl.get_config('analyze_matches') == '50'
         ctrl.set_config('analyze_matches', 52)
         cfg_object = ctrl.get_config(
             'analyze_matches',
