@@ -11,8 +11,8 @@ before_install:
 install:
   - 'pip install -e .'
 script:
-  - 'pytest -v --log-cli-level=INFO --apikey=$apikey --apisecret=$apisecret'
-  - 'pytest -v --log-cli-level=INFO --apikey=$apikey --apisecret=$apisecret --protocol=mysql+pymysql --db=127.0.0.1 --user=travis'
+  - 'pytest -v --cov --cov-report xml --cov sc2monitor --cov-append --log-cli-level=INFO --apikey=$apikey --apisecret=$apisecret'
+  - 'pytest -v --cov --cov-report xml --cov sc2monitor --cov-append --log-cli-level=INFO --apikey=$apikey --apisecret=$apisecret --protocol=mysql+pymysql --db=127.0.0.1 --user=travis'
 deploy:
   provider: pypi
   user: "pressure"
