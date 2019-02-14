@@ -230,7 +230,7 @@ class Controller:
             tmp_player.name = name
         self.db_session.commit()
 
-    def check_match_history(self, complete_data, match):
+    async def check_match_history(self, complete_data, match):
         """Check matches in match history and assign them to races."""
         match_history = await self.sc2api.get_match_history(
             complete_data[0]['player'])
@@ -276,7 +276,8 @@ class Controller:
 
     async def process_player(self, complete_data, new=False):
         """Process the api data of a player."""
-        last_played, len_history = self.check_match_history(complete_data)
+        last_played, len_history \
+            = await self.check_match_history(complete_data)
 
         for race_player in complete_data:
             race_player['missing']['Total'] = race_player['missing']['Win'] + \
