@@ -24,6 +24,8 @@ class Result(enum.Enum):
         if isinstance(value, Result):
             return value
         elif isinstance(value, str):
+            if not value:
+              return cls.Unknown
             for result in cls.__members__:
                 if result[0].lower() == value[0].lower():
                     return cls[result]
