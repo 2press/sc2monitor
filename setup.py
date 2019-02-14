@@ -18,7 +18,11 @@ setup(name='sc2monitor',
       author_email='pres.sure@ymail.com',
       license='MIT',
       python_requires='>=3.7.1',
-      tests_require=['pytest >= 4.2.1'],
+      tests_require=[
+          'pytest >= 4.2.1',
+          'pytest-cov >= 2.6.1',
+          'codecov >= 2.0.15'
+      ],
       packages=['sc2monitor'],
       install_requires=[
           'PyMySQL >= 0.9.3',
