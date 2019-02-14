@@ -73,9 +73,7 @@ def test_race():
     assert_race('random', Race.Random)
     assert Race.get('') == Race.Random
     
-    with pytest.raises(ValueError, match=r'Unknown race .*'):
-        Race.get('')
-    with pytest.raises(ValueError, match=r'Unknown race .*'):
+    with pytest.raises(ValueError):
         Race.get('Human')
        
 def test_server():
