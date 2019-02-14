@@ -1,4 +1,6 @@
 """Test the sc2monitor model."""
+import pytest
+
 from sc2monitor.model import League, Race, Result, Server
 
 
