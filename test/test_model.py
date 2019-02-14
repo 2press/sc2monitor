@@ -110,21 +110,21 @@ def test_league():
             assert League.get('gm') == assert_league
 
     assert_league('unranked', League.Unranked, -1)
-    assert_league('bronze', League.Bronze, 1)
-    assert_league('silver', League.Silver, 2)
-    assert_league('gold', League.Gold, 3)
-    assert_league('platinum', League.Platinum, 4)
-    assert_league('diamond', League.Diamond, 5)
-    assert_league('master', League.Master, 6)
-    assert_league('grandmaster', League.Grandmaster, 7)
+    assert_league('bronze', League.Bronze, 0)
+    assert_league('silver', League.Silver, 1)
+    assert_league('gold', League.Gold, 2)
+    assert_league('platinum', League.Platinum, 3)
+    assert_league('diamond', League.Diamond, 4)
+    assert_league('master', League.Master, 5)
+    assert_league('grandmaster', League.Grandmaster, 6)
     
     assert League.get('') == League.Unranked
     with pytest.raises(ValueError, match=r'Unknown league .*'):
         League.get('Test')
     with pytest.raises(ValueError, match=r'Unknown league .*'):
-        League.get(0)
+        League.get(-2)
     with pytest.raises(ValueError, match=r'Unknown league .*'):
-        League.get(8)
+        League.get(7)
     
     assert League.Master < League.Grandmaster
     assert League.Master <= League.Grandmaster
