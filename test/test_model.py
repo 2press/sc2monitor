@@ -1,5 +1,5 @@
 """Test the sc2monitor model."""
-from sc2monitor.model import League, Race, Result
+from sc2monitor.model import League, Race, Result, Server
 
 
 def test_result_win():
@@ -13,6 +13,7 @@ def test_result_win():
     assert Result.get(2) == Result.Win
     assert Result.Win.change() == 1
     assert Result.Win.short() == 'W'
+    assert str(Result.Win) == 'Win'
 
 
 def test_result_loss():
@@ -26,6 +27,7 @@ def test_result_loss():
     assert Result.get(-2) == Result.Loss
     assert Result.Loss.change() == -1
     assert Result.Loss.short() == 'L'
+    assert str(Result.Loss) == 'Loss'
 
 
 def test_result_tie():
@@ -38,7 +40,17 @@ def test_result_tie():
     assert Result.get(0) == Result.Tie
     assert Result.Tie.change() == 0
     assert Result.Tie.short() == 'D'
-
+    assert str(Result.Tie) == 'Tie'
+    
+def test_result_unknown():
+    assert Result.get('') == Result.Unknown
+    assert Result.get(Result.Unknown) == Result.Unknown
+    assert Result.get('unknown') == Result.Unknown
+    assert Result.get('u') == Result.Unknown
+    assert Result.get('U') == Result.Unknown
+    assert Result.Unkown.change() == 0
+    assert Result.Unkown.short() == 'U'
+    assert str(Result.Unkown) == 'Unknown'
 
 def test_race():
     def assert_race(race: str, assert_race: Race):
@@ -49,6 +61,8 @@ def test_race():
         assert Race.get(race.capitalize()) == assert_race
         assert Race.get(race_short) == assert_race
         assert Race.get(race_short.upper()) == assert_race
+        assert race_short.upper() == assert_race.short()
+        assert race_short.capitalize() == str(assert_race)
         assert Race.get(assert_race) == assert_race
 
     assert_race('zerg', Race.Zerg)
@@ -56,10 +70,26 @@ def test_race():
     assert_race('terran', Race.Terran)
     assert_race('random', Race.Random)
     assert Race.get('') == Race.Random
-
+    
+    with pytest.raises(ValueError, match=r'Unknown race .*'):
+        Race.get('')
+    with pytest.raises(ValueError, match=r'Unknown race .*'):
+        Race.get('Human')
+       
+def test_server():
+    assert str(Server.America) == 'America'
+    assert str(Server.Europe) == 'Europe'
+    assert str(Server.Korea) == 'Korea'
+    assert Server.America.short() == 'us'
+    assert Server.Europe.short() == 'eu'
+    assert Server.Korea.short() == 'kr'
+    assert Server.America.id() == 1
+    assert Server.Europe.id() == 2
+    assert Server.Korea.id() == 3
+        
 
 def test_league():
-    def assert_league(league: str, assert_league: League):
+    def assert_league(league: str, assert_league: League, ident: int):
         league = league.lower()
         league_short = league[0:2]
         assert League.get(league) == assert_league
@@ -69,6 +99,9 @@ def test_league():
         assert League.get(league_short.upper()) == assert_league
         assert League.get(assert_league) == assert_league
         assert League.get(assert_league.value) == assert_league
+        assert League.get(ident) == assert_league
+        assert assert_league.id() == ident
+        assert league.capitalize() == str(assert_league)
         if assert_league != League.Grandmaster:
             assert League.get(league[0]) == assert_league
             assert League.get(league[0].upper()) == assert_league
@@ -76,11 +109,26 @@ def test_league():
             assert League.get('GM') == assert_league
             assert League.get('gm') == assert_league
 
-    assert_league('unranked', League.Unranked)
-    assert_league('bronze', League.Bronze)
-    assert_league('silver', League.Silver)
-    assert_league('gold', League.Gold)
-    assert_league('platinum', League.Platinum)
-    assert_league('diamond', League.Diamond)
-    assert_league('master', League.Master)
-    assert_league('grandmaster', League.Grandmaster)
+    assert_league('unranked', League.Unranked, -1)
+    assert_league('bronze', League.Bronze, 1)
+    assert_league('silver', League.Silver, 2)
+    assert_league('gold', League.Gold, 3)
+    assert_league('platinum', League.Platinum, 4)
+    assert_league('diamond', League.Diamond, 5)
+    assert_league('master', League.Master, 6)
+    assert_league('grandmaster', League.Grandmaster, 7)
+    
+    assert League.get('') == League.Unranked
+    with pytest.raises(ValueError, match=r'Unknown league .*'):
+        League.get('Test')
+    with pytest.raises(ValueError, match=r'Unknown league .*'):
+        League.get(0)
+    with pytest.raises(ValueError, match=r'Unknown league .*'):
+        League.get(8)
+    
+    assert League.Master < League.Grandmaster
+    assert League.Master =< League.Grandmaster
+    assert League.Gold > League.Silver
+    assert League.Gold >= League.Silver
+    assert League.Diamond > League.Unranked
+    assert League.Platinum >= League.Platinum
