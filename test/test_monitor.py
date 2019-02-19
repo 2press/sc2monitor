@@ -43,6 +43,8 @@ async def monitor_loop(**kwargs):
         assert player.realm == 1
         assert player.server == Server.Europe
         assert player.player_id == 221986
+        
+        ctrl.update_player_name(player)
 
         matches = ctrl.db_session.query(Match).filter(
             Match.player == player).count()
@@ -55,6 +57,8 @@ async def monitor_loop(**kwargs):
         assert player.realm == 1
         assert player.server == Server.Europe
         assert player.player_id == 1982648
+        
+        ctrl.update_player_name(player)
 
         matches = ctrl.db_session.query(Match).filter(
             Match.player == player).count()
