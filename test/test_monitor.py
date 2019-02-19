@@ -14,7 +14,7 @@ async def monitor_loop(**kwargs):
         assert token != ''
         assert await ctrl.sc2api.check_access_token(token)
 
-        ctrl.add_player('https://starcraft2.com/en-gb/profile/2/1/221986')
+        ctrl.add_player('http://eu.battle.net/sc2/en/profile/221986/1/pressure')
         ctrl.add_player('https://starcraft2.com/en-gb/profile/2/1/1982648')
 
         await ctrl.run()
