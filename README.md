@@ -30,7 +30,7 @@ Your API-key `your-bnet-api-key` and secret `your-bnet-api-secret` have to be cr
 
 If not executed regularly the script will try to make an educated guess for games played since the last execution.
 
-At execution a protocol will automatically logged to the database.
+At execution a protocol will be automatically logged to the database.
 
 You can add and remove players to the monitor by passing their StarCraft 2 URL:
 ```python
