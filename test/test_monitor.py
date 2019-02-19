@@ -106,6 +106,9 @@ async def monitor_loop(**kwargs):
             return_object=True)
         assert cfg_object is not None
         assert cfg_object.value == str(52)
+        
+        with pytest.raises(ValueError):
+            ctrl.add_player('pressure#986')
 
 
 def test_monitor(apikey, apisecret, db, user, passwd, protocol):
