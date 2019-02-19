@@ -48,7 +48,7 @@ async def monitor_loop(**kwargs):
         player.name = 'Test'
         ctrl.db_session.commit()
         await ctrl.update_player_name(player)
-        ctrl.db_session.update(player)
+        ctrl.db_session.refresh(player)
         assert player.name != ''
 
         matches = ctrl.db_session.query(Match).filter(
@@ -66,7 +66,7 @@ async def monitor_loop(**kwargs):
         player.name = 'Test'
         ctrl.db_session.commit()
         await ctrl.update_player_name(player)
-        ctrl.db_session.update(player)
+        ctrl.db_session.refresh(player)
         assert player.name != ''
 
         matches = ctrl.db_session.query(Match).filter(
