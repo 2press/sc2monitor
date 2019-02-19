@@ -2,6 +2,7 @@
 import asyncio
 
 import pytest
+import logging
 
 from sc2monitor.controller import Controller
 from sc2monitor.model import Log, Match, Player, Run, Server
@@ -44,7 +45,11 @@ async def monitor_loop(**kwargs):
         assert player.server == Server.Europe
         assert player.player_id == 221986
         
-        ctrl.update_player_name(player)
+        player.name = 'Test'
+        ctrl.db_session.commit()
+        await ctrl.update_player_name(player)
+        ctrl.db_session.update(player)
+        assert player.name != ''
 
         matches = ctrl.db_session.query(Match).filter(
             Match.player == player).count()
@@ -58,7 +63,11 @@ async def monitor_loop(**kwargs):
         assert player.server == Server.Europe
         assert player.player_id == 1982648
         
-        ctrl.update_player_name(player)
+        player.name = 'Test'
+        ctrl.db_session.commit()
+        await ctrl.update_player_name(player)
+        ctrl.db_session.update(player)
+        assert player.name != ''
 
         matches = ctrl.db_session.query(Match).filter(
             Match.player == player).count()
@@ -115,7 +124,9 @@ async def monitor_loop(**kwargs):
             ctrl.add_player('pressure#986')
 
 
-def test_monitor(apikey, apisecret, db, user, passwd, protocol):
+def test_monitor(caplog, apikey, apisecret, db, user, passwd, protocol):
+    
+    caplog.set_level(logging.ERROR)
 
     assert apikey != ''
     assert apisecret != ''
@@ -134,3 +145,7 @@ def test_monitor(apikey, apisecret, db, user, passwd, protocol):
     kwargs['api_secret'] = apisecret
 
     asyncio.run(monitor_loop(**kwargs))
+    
+    for record in caplog.records:
+        assert record.levelname != 'CRITICAL'
+        assert record.levelname != 'ERROR'
