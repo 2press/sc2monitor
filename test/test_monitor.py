@@ -84,26 +84,23 @@ async def monitor_loop(**kwargs):
         win_count = player.wins
         loss_count = player.losses
         assert matches_count <= 25
-        matches_to_delete = max(min(3, matches_count - 1), 0)
         for position, match in enumerate(matches):
-            if position < matches_to_delete:
-                if match.result == Result.Win:
-                    player.wins -= 1
-                elif match.result == Result.Loss:
-                    player.losses -= 1
-                else:
-                    raise ValueError('No Win or Loss')
-                player.mmr -= match.mmr_change
-                ctrl.db_session.delete(match)
+            if match.result == Result.Win:
+                player.wins -= 1
+            elif match.result == Result.Loss:
+                player.losses -= 1
             else:
-                player.last_played = match.datetime
-                break
+                raise ValueError('No Win or Loss')
+            ctrl.db_session.delete(match)
+            player.last_played = match.datetime - timedelta(days=1)
+
+        player.wins = 0
+        player.losses = 0
         ctrl.db_session.commit()
         
         matches = ctrl.db_session.query(Match).filter(
             Match.player == player).count()
-        assert matches_count - matches_to_delete > 0
-        assert matches == matches_count - matches_to_delete
+        assert matches == 0
 
         await ctrl.run()
 
@@ -130,6 +127,8 @@ async def monitor_loop(**kwargs):
             Match.player == player).count()
         
         assert matches == matches_count
+        
+        ctrl.update_ema_mmr(player)
 
         ctrl.remove_player('https://starcraft2.com/en-gb/profile/2/1/1982648')
 
