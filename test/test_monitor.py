@@ -99,7 +99,7 @@ async def monitor_loop(**kwargs):
         ctrl.db_session.commit()
         
         matches = ctrl.db_session.query(Match).filter(
-            Match.player_id == player.player_id).count()
+            Match.player == player).count()
         assert matches_count - matches_to_delete > 0
         assert matches == matches_count - matches_to_delete
 
