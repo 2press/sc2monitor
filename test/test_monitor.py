@@ -116,7 +116,7 @@ async def monitor_loop(**kwargs):
         matches = ctrl.db_session.query(Match).filter(
             Match.player_id == player.player_id).count()
         
-        assert matches = matches_count
+        assert matches == matches_count
 
         ctrl.remove_player('https://starcraft2.com/en-gb/profile/2/1/1982648')
 
