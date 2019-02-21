@@ -4,9 +4,11 @@ import logging
 
 import pytest
 
+from datetime import datetime, timedelta
+
 from sc2monitor import add_player, init, remove_player, run
 from sc2monitor.controller import Controller
-from sc2monitor.model import Log, Match, Player, Run, Server
+from sc2monitor.model import Log, Match, Player, Run, Server, Result
 
 
 async def monitor_loop(**kwargs):
@@ -70,10 +72,28 @@ async def monitor_loop(**kwargs):
         await ctrl.update_player_name(player)
         ctrl.db_session.refresh(player)
         assert player.name != ''
+        player.refreshed = datetime.now() - timedelta(days=1)
 
         matches = ctrl.db_session.query(Match).filter(
-            Match.player == player).count()
-        assert matches <= 25
+            Match.player == player).order_by(
+            Match.datetime.desc()).all()
+        matches_count = len(matches)
+        assert matches_count <= 25
+        matches_to_delete = max(3, matches_count - 1)
+        for position, match in enumerate(matches):
+            if position < matches_to_delete:
+                if match.result == Result.Win:
+                    player.wins -= 1
+                elif match.result == Result.Loss:
+                    player.losses -= 1
+                else:
+                    raise ValueError('No Win or Loss')
+                player.mmr -= match.mmr_change
+                ctrl.db_session.delete(match)
+             else:
+                player.last_played = match.datetime
+                break
+        ctrl.db_session.commit()
 
         await ctrl.run()
 
@@ -89,12 +109,24 @@ async def monitor_loop(**kwargs):
         warnings = ctrl.db_session.query(Log).filter(
             Log.level == 'WARNING').count()
         assert warnings == run.warnings
+        
+        player = ctrl.db_session.query(Player).filter(
+            Player.player_id == 1982648).limit(1).scalar()
+        
+        matches = ctrl.db_session.query(Match).filter(
+            Match.player_id == player.player_id).count()
+        
+        assert matches = matches_count
 
-        ctrl.remove_player('https://starcraft2.com/en-gb/profile/2/1/221986')
+        ctrl.remove_player('https://starcraft2.com/en-gb/profile/2/1/1982648')
 
         matches = ctrl.db_session.query(Match).filter(
             Match.player_id == player.player_id).count()
         assert matches == 0
+        
+        player = ctrl.db_session.query(Player).filter(
+            Player.player_id == 1982648).limit(1).scalar()
+        assert player is None
 
         ctrl.remove_player('https://starcraft2.com/en-gb/profile/2/1/221986')
 
