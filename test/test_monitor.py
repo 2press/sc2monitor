@@ -1,10 +1,10 @@
 """Test basic function of the sc2monitor."""
 import asyncio
-
-import pytest
 import logging
 
-from sc2monitor import init, add_player, remove_player, run
+import pytest
+
+from sc2monitor import add_player, init, remove_player, run
 from sc2monitor.controller import Controller
 from sc2monitor.model import Log, Match, Player, Run, Server
 
@@ -16,7 +16,8 @@ async def monitor_loop(**kwargs):
         assert token != ''
         assert await ctrl.sc2api.check_access_token(token)
 
-        ctrl.add_player('http://eu.battle.net/sc2/en/profile/221986/1/pressure')
+        ctrl.add_player(
+            'http://eu.battle.net/sc2/en/profile/221986/1/pressure')
         ctrl.add_player('https://starcraft2.com/en-gb/profile/2/1/1982648')
 
         await ctrl.run()
@@ -45,7 +46,7 @@ async def monitor_loop(**kwargs):
         assert player.realm == 1
         assert player.server == Server.Europe
         assert player.player_id == 221986
-        
+
         player.name = 'Test'
         ctrl.db_session.commit()
         await ctrl.update_player_name(player)
@@ -63,7 +64,7 @@ async def monitor_loop(**kwargs):
         assert player.realm == 1
         assert player.server == Server.Europe
         assert player.player_id == 1982648
-        
+
         player.name = 'Test'
         ctrl.db_session.commit()
         await ctrl.update_player_name(player)
@@ -120,18 +121,18 @@ async def monitor_loop(**kwargs):
             return_object=True)
         assert cfg_object is not None
         assert cfg_object.value == str(52)
-        
+
         with pytest.raises(ValueError):
             ctrl.add_player('pressure#986')
-            
+
         with pytest.raises(ValueError):
-            ctrl.setup({'not_valid_key': 'value'})
-        
-        ctrl.setup({'analyze_matches': 50})
+            ctrl.setup(not_valid_key='value')
+
+        ctrl.setup(analyze_matches=50)
 
 
 def test_monitor(caplog, apikey, apisecret, db, user, passwd, protocol):
-    
+
     caplog.set_level(logging.ERROR)
 
     assert apikey != ''
@@ -151,23 +152,28 @@ def test_monitor(caplog, apikey, apisecret, db, user, passwd, protocol):
     kwargs['api_secret'] = apisecret
 
     asyncio.run(monitor_loop(**kwargs))
-    
+
     for record in caplog.records:
         assert record.levelname != 'CRITICAL'
         assert record.levelname != 'ERROR'
-        
+
+
 def test_wrapper(caplog, apikey, apisecret, db, user, passwd, protocol):
 
     caplog.set_level(logging.ERROR)
-    
-    init(host=db, user=user, passwd=passwd, api_key=apikey, api_secret=apisecret)
-    
+
+    if protocol == 'sqlite':
+        return
+
+    init(host=db, user=user, passwd=passwd, protocol=protocol,
+         api_key=apikey, api_secret=apisecret)
+
     add_player('https://starcraft2.com/en-gb/profile/2/1/221986')
-    
+
     run()
-    
+
     remove_player('https://starcraft2.com/en-gb/profile/2/1/221986')
-    
+
     for record in caplog.records:
         assert record.levelname != 'CRITICAL'
         assert record.levelname != 'ERROR'
