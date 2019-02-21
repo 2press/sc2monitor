@@ -27,7 +27,10 @@ class SC2API:
         self._access_token = ''
         self._access_token_checked = False
         self.read_config()
-        self._access_token_lock = asyncio.Lock()
+        try:
+            self._access_token_lock = asyncio.Lock()
+        except RuntimeError:
+            self._access_token_lock = None
         self.request_count = 0
         self.retry_count = 0
 
