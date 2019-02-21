@@ -60,7 +60,8 @@ async def monitor_loop(**kwargs):
         assert matches <= 25
 
         player = ctrl.db_session.query(Player).filter(
-            Player.player_id == 1982648).limit(1).scalar()
+            Player.player_id == 1982648).order_by(
+            Player.wins.desc()).limit(1).scalar()
         assert player is not None
         assert player.name != ''
         assert player.realm == 1
@@ -81,7 +82,7 @@ async def monitor_loop(**kwargs):
             Match.datetime.desc()).all()
         matches_count = len(matches)
         assert matches_count <= 25
-        matches_to_delete = max(3, matches_count - 1)
+        matches_to_delete = max(min(3, matches_count - 1), 0)
         for position, match in enumerate(matches):
             if position < matches_to_delete:
                 if match.result == Result.Win:
