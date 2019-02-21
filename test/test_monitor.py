@@ -126,7 +126,7 @@ async def monitor_loop(**kwargs):
         matches = ctrl.db_session.query(Match).filter(
             Match.player == player).count()
         
-        assert matches == matches_count
+        assert matches == win_count + loss_count
         
         ctrl.update_ema_mmr(player)
 
