@@ -81,6 +81,8 @@ async def monitor_loop(**kwargs):
             Match.player == player).order_by(
             Match.datetime.desc()).all()
         matches_count = len(matches)
+        win_count = player.wins
+        loss_count = player.losses
         assert matches_count <= 25
         matches_to_delete = max(min(3, matches_count - 1), 0)
         for position, match in enumerate(matches):
@@ -121,8 +123,11 @@ async def monitor_loop(**kwargs):
         player = ctrl.db_session.query(Player).filter(
             Player.id == player_id).limit(1).scalar()
         
+        assert player.wins == win_count
+        assert player.losses == loss_count 
+ 
         matches = ctrl.db_session.query(Match).filter(
-            Match.player_id == player.player_id).count()
+            Match.player == player).count()
         
         assert matches == matches_count
 
