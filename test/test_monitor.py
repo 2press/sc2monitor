@@ -4,6 +4,7 @@ import asyncio
 import pytest
 import logging
 
+from sc2monitor import init, add_player, remove_player, run
 from sc2monitor.controller import Controller
 from sc2monitor.model import Log, Match, Player, Run, Server
 
@@ -122,6 +123,11 @@ async def monitor_loop(**kwargs):
         
         with pytest.raises(ValueError):
             ctrl.add_player('pressure#986')
+            
+        with pytest.raises(ValueError):
+            ctrl.setup({'not_valid_key': 'value'})
+        
+        ctrl.setup({'analyze_matches': 50})
 
 
 def test_monitor(caplog, apikey, apisecret, db, user, passwd, protocol):
@@ -145,6 +151,22 @@ def test_monitor(caplog, apikey, apisecret, db, user, passwd, protocol):
     kwargs['api_secret'] = apisecret
 
     asyncio.run(monitor_loop(**kwargs))
+    
+    for record in caplog.records:
+        assert record.levelname != 'CRITICAL'
+        assert record.levelname != 'ERROR'
+        
+def test_wrapper(caplog, apikey, apisecret, db, user, passwd, protocol):
+
+    caplog.set_level(logging.ERROR)
+    
+    init(host=db, user=user, passwd=passwd, api_key=apikey, api_secret=apisecret)
+    
+    add_player('https://starcraft2.com/en-gb/profile/2/1/221986')
+    
+    run()
+    
+    remove_player('https://starcraft2.com/en-gb/profile/2/1/221986')
     
     for record in caplog.records:
         assert record.levelname != 'CRITICAL'
