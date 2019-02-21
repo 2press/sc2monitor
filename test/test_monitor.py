@@ -90,7 +90,7 @@ async def monitor_loop(**kwargs):
                     raise ValueError('No Win or Loss')
                 player.mmr -= match.mmr_change
                 ctrl.db_session.delete(match)
-             else:
+            else:
                 player.last_played = match.datetime
                 break
         ctrl.db_session.commit()
