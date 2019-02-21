@@ -66,6 +66,8 @@ async def monitor_loop(**kwargs):
         assert player.realm == 1
         assert player.server == Server.Europe
         assert player.player_id == 1982648
+        
+        player_id = player.id
 
         player.name = 'Test'
         ctrl.db_session.commit()
@@ -94,6 +96,11 @@ async def monitor_loop(**kwargs):
                 player.last_played = match.datetime
                 break
         ctrl.db_session.commit()
+        
+        matches = ctrl.db_session.query(Match).filter(
+            Match.player_id == player.player_id).count()
+        assert matches_count - matches_to_delete > 0
+        assert matches == matches_count - matches_to_delete
 
         await ctrl.run()
 
@@ -111,7 +118,7 @@ async def monitor_loop(**kwargs):
         assert warnings == run.warnings
         
         player = ctrl.db_session.query(Player).filter(
-            Player.player_id == 1982648).limit(1).scalar()
+            Player.id == player_id).limit(1).scalar()
         
         matches = ctrl.db_session.query(Match).filter(
             Match.player_id == player.player_id).count()
