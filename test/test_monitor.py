@@ -1,14 +1,13 @@
 """Test basic function of the sc2monitor."""
 import asyncio
 import logging
+from datetime import datetime, timedelta
 
 import pytest
 
-from datetime import datetime, timedelta
-
 from sc2monitor import add_player, init, remove_player, run
 from sc2monitor.controller import Controller
-from sc2monitor.model import Log, Match, Player, Run, Server, Result
+from sc2monitor.model import Log, Match, Player, Result, Run, Server
 
 
 async def monitor_loop(**kwargs):
@@ -67,7 +66,7 @@ async def monitor_loop(**kwargs):
         assert player.realm == 1
         assert player.server == Server.Europe
         assert player.player_id == 1982648
-        
+
         player_id = player.id
 
         player.name = 'Test'
@@ -97,7 +96,7 @@ async def monitor_loop(**kwargs):
         player.wins = 0
         player.losses = 0
         ctrl.db_session.commit()
-        
+
         matches = ctrl.db_session.query(Match).filter(
             Match.player == player).count()
         assert matches == 0
@@ -116,18 +115,18 @@ async def monitor_loop(**kwargs):
         warnings = ctrl.db_session.query(Log).filter(
             Log.level == 'WARNING').count()
         assert warnings == run.warnings
-        
+
         player = ctrl.db_session.query(Player).filter(
             Player.id == player_id).limit(1).scalar()
-        
+
         assert player.wins == win_count
-        assert player.losses == loss_count 
- 
+        assert player.losses == loss_count
+
         matches = ctrl.db_session.query(Match).filter(
             Match.player == player).count()
-        
+
         assert matches == win_count + loss_count
-        
+
         ctrl.update_ema_mmr(player)
 
         ctrl.remove_player('https://starcraft2.com/en-gb/profile/2/1/1982648')
@@ -135,7 +134,7 @@ async def monitor_loop(**kwargs):
         matches = ctrl.db_session.query(Match).filter(
             Match.player_id == player.player_id).count()
         assert matches == 0
-        
+
         player = ctrl.db_session.query(Player).filter(
             Player.player_id == 1982648).limit(1).scalar()
         assert player is None
