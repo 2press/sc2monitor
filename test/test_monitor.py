@@ -166,7 +166,7 @@ def test_wrapper(caplog, apikey, apisecret, db, user, passwd, protocol):
         return
 
     init(host=db, user=user, passwd=passwd, protocol=protocol,
-         api_key=apikey, api_secret=apisecret)
+         api_key=apikey, api_secret=apisecret, db='sc2monitor')
 
     add_player('https://starcraft2.com/en-gb/profile/2/1/221986')
 
