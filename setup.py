@@ -19,7 +19,7 @@ setup(name='sc2monitor',
       license='MIT',
       python_requires='>=3.7.1',
       tests_require=[
-          'pytest >= 4.3.1',
+          'pytest >= 4.4.0',
           'pytest-cov >= 2.6.1',
           'codecov >= 2.0.15'
       ],
@@ -27,7 +27,7 @@ setup(name='sc2monitor',
       install_requires=[
           'PyMySQL >= 0.9.3',
           'aiohttp >= 3.5.4',
-          'sqlalchemy >= 1.3.1'
+          'sqlalchemy >= 1.3.2'
       ],
       zip_safe=False,
       classifiers=[
