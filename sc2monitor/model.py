@@ -395,7 +395,7 @@ class Log(Base):
     id = Column(Integer, primary_key=True)  # auto incrementing
     logger = Column(String(64))  # the name of the logger. (e.g. myapp.views)
     level = Column(String(64))  # info, debug, or error?
-    trace = Column(String(1024))  # the full traceback printout
+    trace = Column(String(2048))  # the full traceback printout
     msg = Column(String(255))  # any custom log you may have included
     datetime = Column(DateTime, default=datetime.now)
 
@@ -413,7 +413,7 @@ class Log(Base):
     def __repr__(self):
         """Represent database object."""
         return "<Log: {} - {}>".format(
-            self.datetime.strftime('%m/%d/%Y-%H:%M:%S'), self.msg[:50])
+            self.datetime.strftime('%m/%d/%Y-%H:%M:%S'), self.msg[:100])
 
 
 class Run(Base):
