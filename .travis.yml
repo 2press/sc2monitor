@@ -6,14 +6,14 @@ python:
   - '3.8-dev'
 addons:
   mariadb: '10.4'
-before_install:
+before_script:
   - mysql -e 'CREATE DATABASE sc2monitor;'
 install:
   - 'pip install pip -U'
   - 'pip install -r test/requirements.txt -U'
   - 'pip install -e . -U'
 script:
-#  - 'pytest -v --cov --cov-report xml --cov sc2monitor --cov-append --log-cli-level=INFO --apikey=$apikey --apisecret=$apisecret'
+  - 'pytest -v --cov --cov-report xml --cov sc2monitor --cov-append --log-cli-level=INFO --apikey=$apikey --apisecret=$apisecret'
   - 'pytest -v --cov --cov-report xml --cov sc2monitor --cov-append --log-cli-level=INFO --apikey=$apikey --apisecret=$apisecret --protocol=mysql+pymysql --db=127.0.0.1 --user=travis'
 after_success: codecov
 deploy:
