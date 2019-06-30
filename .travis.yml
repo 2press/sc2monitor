@@ -5,7 +5,7 @@ python:
   - '3.7'
   - '3.8-dev'
 addons:
-  mariadb: '10.3'
+  mariadb: '10.4'
 before_script:
   - mysql -u root -e 'CREATE DATABASE sc2monitor DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;'
   - mysql -u root -e 'CREATE USER IF NOT EXISTS travis@localhost; GRANT ALL ON *.* TO travis@localhost;'
@@ -14,7 +14,7 @@ install:
   - 'pip install -r test/requirements.txt -U'
   - 'pip install -e . -U'
 script:
-#  - 'pytest -v --cov --cov-report xml --cov sc2monitor --cov-append --log-cli-level=INFO --apikey=$apikey --apisecret=$apisecret'
+  - 'pytest -v --cov --cov-report xml --cov sc2monitor --cov-append --log-cli-level=INFO --apikey=$apikey --apisecret=$apisecret'
   - 'pytest -v --cov --cov-report xml --cov sc2monitor --cov-append --log-cli-level=INFO --apikey=$apikey --apisecret=$apisecret --protocol=mysql+pymysql --db=127.0.0.1 --user=travis'
 after_success: codecov
 deploy:
