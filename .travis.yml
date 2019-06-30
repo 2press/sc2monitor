@@ -7,7 +7,7 @@ python:
 addons:
   mariadb: '10.4'
 before_script:
-  - mysql -e 'CREATE DATABASE sc2monitor;'
+  - mysql -u travis -e 'CREATE DATABASE sc2monitor;'
 install:
   - 'pip install pip -U'
   - 'pip install -r test/requirements.txt -U'
