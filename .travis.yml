@@ -5,9 +5,9 @@ python:
   - '3.7'
   - '3.8-dev'
 addons:
-  mariadb: '10.4'
+  mariadb: '10.3'
 before_script:
-  - mysql -u travis -e 'CREATE DATABASE sc2monitor;'
+  - "mysql -e 'CREATE DATABASE sc2monitor DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;'"
 install:
   - 'pip install pip -U'
   - 'pip install -r test/requirements.txt -U'
