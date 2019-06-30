@@ -238,7 +238,7 @@ class Controller:
         for match in match_history:
             positive = []
             for data_key, data in enumerate(complete_data):
-                needed = data['missing'][match['result'].describe()] > 0
+                needed = data['missing'].get(match['result'].describe(), 0) > 0
                 try:
                     datetime_check = (match['datetime']
                                       - data['player'].last_played
