@@ -28,7 +28,7 @@ class Controller:
 
     async def __aenter__(self):
         """Create a aiohttp and db session that will later be closed."""
-        headers = {'Accept-Encoding': 'gzip'}
+        headers = {'Accept-Encoding': 'gzip, deflate'}
         self.http_session = aiohttp.ClientSession(headers=headers)
         self.create_db_session()
         return self
