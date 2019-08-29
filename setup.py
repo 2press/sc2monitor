@@ -19,7 +19,7 @@ setup(name='sc2monitor',
       license='MIT',
       python_requires='>=3.7.1',
       tests_require=[
-          'pytest >= 5.0.0',
+          'pytest >= 5.1.1',
           'pytest-cov >= 2.7.1',
           'codecov >= 2.0.15'
       ],
