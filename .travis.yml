@@ -3,7 +3,7 @@ cache: pip
 dist: xenial # currently needed for python >=3.7
 python:
   - '3.7'
-#  - '3.8-dev'
+  - '3.8'
 addons:
   mariadb: '10.3'
 before_script:
