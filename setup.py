@@ -27,7 +27,7 @@ setup(name='sc2monitor',
       install_requires=[
           'PyMySQL >= 0.9.3',
           'aiohttp >= 3.6.1',
-          'sqlalchemy==1.3.12'
+          'sqlalchemy==1.3.13'
       ],
       zip_safe=False,
       classifiers=[
