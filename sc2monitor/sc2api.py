@@ -266,7 +266,7 @@ class SC2API:
         for match in data.get('matches', []):
             if match['type'] == scope:
                 match_data = {
-                    'result': model.Result[match['decision']],
+                    'result': model.Result.get(match['decision']),
                     'datetime': datetime.fromtimestamp(match['date'])}
                 match_history.append(match_data)
 
