@@ -88,8 +88,6 @@ async def monitor_loop(**kwargs):
                 player.wins -= 1
             elif match.result == Result.Loss:
                 player.losses -= 1
-            else:
-                raise ValueError('No Win or Loss')
             ctrl.db_session.delete(match)
             player.last_played = match.datetime - timedelta(days=1)
 
