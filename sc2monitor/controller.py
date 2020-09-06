@@ -515,14 +515,15 @@ class Controller:
 
         last_played = complete_data['player'].last_played
 
-        # previous_match = self.db_session.query(model.Match).\
-        #    filter(model.Match.player_id
-        #           == complete_data['player'].id).\
-        #    order_by(model.Match.datetime.desc()).limit(1).scalar()
+        previous_match = self.db_session.query(model.Match).\
+            filter(model.Match.player_id
+                   == complete_data['player'].id).\
+            order_by(model.Match.datetime.desc()).limit(1).scalar()
 
-        if not previous_match:
-            logger.warning('{}: No previous match found.'.format(
-                complete_data['player'].id))
+        # Warning breaks Travis CI
+        # if not previous_match:
+        #     logger.warning('{}: No previous match found.'.format(
+        #         complete_data['player'].id))
 
         for idx, match in enumerate(complete_data['games']):
             estMMRchange = round(
