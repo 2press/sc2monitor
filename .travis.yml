@@ -4,6 +4,7 @@ dist: xenial # currently needed for python >=3.7
 python:
   - '3.7'
   - '3.8'
+  - '3.9'
 addons:
   mariadb: '10.3'
 before_script:
