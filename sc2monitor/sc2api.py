@@ -86,7 +86,7 @@ class SC2API:
 
     async def receive_new_access_token(self):
         """Receive a new acces token vai oauth."""
-        data, status = await self._perform_api_request(
+        data, status = await self._perform_api_post_request(
             'https://eu.battle.net/oauth/token',
             auth=BasicAuth(
                 self._key, self._secret),
@@ -271,6 +271,39 @@ class SC2API:
                 match_history.append(match_data)
 
         return match_history
+
+    async def _perform_api_post_request(self, url, **kwargs):
+        """Perform a generic api request (including retries)."""
+        error = ''
+        json = {}
+        max_retries = 5
+        for retries in range(max_retries):
+            async with self._session.post(url, **kwargs) as resp:
+                self.request_count += 1
+                status = resp.status
+                if resp.status == 504:
+                    error = 'API timeout'
+                    self.retry_count += 1
+                    continue
+                try:
+                    resp.raise_for_status()
+                except ClientResponseError:
+                    error = f'{resp.status}: {resp.reason}'
+                    continue
+                try:
+                    json = await resp.json()
+                except ContentTypeError:
+                    error = 'Unable to decode JSON'
+                    self.retry_count += 1
+                    status = 0
+                    continue
+                json['request_datetime'] = datetime.now()
+                break
+
+        if retries == max_retries - 1 and error:
+            logger.warning(error)
+
+        return json, status
 
     async def _perform_api_request(self, url, **kwargs):
         """Perform a generic api request (including retries)."""
