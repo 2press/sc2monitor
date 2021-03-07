@@ -52,6 +52,9 @@ class Controller:
         self.cache_logs = self.get_config(
             'cache_logs',
             default_value=500)
+        self.cache_runs = self.get_config(
+            'cache_runs',
+            default_value=500)
         self.analyze_matches = self.get_config(
             'analyze_matches',
             default_value=100)
@@ -698,8 +701,8 @@ class Controller:
 
         return correct_player
 
-    def delete_old_logs(self):
-        """ Delete old logs in database."""
+    def delete_old_logs_and_runs(self):
+        """ Delete old logs and runs from database."""
         deletions = 0
         for log_entry in self.db_session.query(model.Log).\
                 order_by(model.Log.datetime.desc()).\
@@ -709,6 +712,15 @@ class Controller:
         if deletions > 0:
             self.db_session.commit()
             logger.info(f"{deletions} old log entries were deleted!")
+        deletions = 0
+        for run in self.db_session.query(model.Run).\
+                order_by(model.Run.datetime.desc()).\
+                offset(self.cache_runs).all():
+            self.db_session.delete(run)
+            deletions += 1
+        if deletions > 0:
+            self.db_session.commit()
+            logger.info(f"{deletions} old run logs were deleted!")
 
     async def run(self):
         """Run the sc2monitor."""
@@ -736,7 +748,7 @@ class Controller:
                     'The following exception was'
                     f' raised while quering player {players[key].id}:')
 
-        self.delete_old_logs()
+        self.delete_old_logs_and_runs()
 
         duration = time.time() - start_time
         self.db_session.add(
