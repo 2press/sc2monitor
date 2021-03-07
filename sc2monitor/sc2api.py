@@ -240,6 +240,9 @@ class SC2API:
             race = player.get('favoriteRace')
             games = int(team.get('wins')) + int(team.get('losses'))
 
+            if mmr is None:
+                raise InvalidApiResponse(api_url)
+
             yield {
                 'mmr': int(mmr),
                 'race': model.Race.get(race),
